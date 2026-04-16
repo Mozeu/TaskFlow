@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow — Gestor de Proyectos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════
+       SIDEBAR
+  ══════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">TaskFlow</span>
+      </div>
+      <button class="sidebar-toggle" id="btn-sidebar-toggle" aria-label="Cerrar menú">&#8249;</button>
+    </div>
+
+    <!-- User Profile Switcher (RF19, RF20) -->
+    <div class="user-switcher" id="user-switcher">
+      <div class="user-avatar" id="current-user-avatar">JD</div>
+      <div class="user-info">
+        <span class="user-name" id="current-user-name">Juan Díaz</span>
+        <span class="user-role">Administrador</span>
+      </div>
+      <button class="btn-icon" id="btn-switch-user" aria-label="Cambiar usuario">&#8595;</button>
+    </div>
+
+    <nav class="sidebar-nav" role="navigation" aria-label="Navegación principal">
+      <ul class="nav-list">
+        <li class="nav-item active" data-tab="dashboard">
+          <span class="nav-icon">▦</span>
+          <span class="nav-label">Dashboard</span>
+        </li>
+        <li class="nav-item" data-tab="projects">
+          <span class="nav-icon">◫</span>
+          <span class="nav-label">Proyectos</span>
+          <span class="nav-badge" id="badge-projects">3</span>
+        </li>
+        <li class="nav-item" data-tab="kanban">
+          <span class="nav-icon">▤</span>
+          <span class="nav-label">Tablero Kanban</span>
+        </li>
+        <li class="nav-item" data-tab="calendar">
+          <span class="nav-icon">▦</span>
+          <span class="nav-label">Calendario</span>
+        </li>
+        <li class="nav-item" data-tab="stats">
+          <span class="nav-icon">◈</span>
+          <span class="nav-label">Estadísticas</span>
+        </li>
+        <li class="nav-item" data-tab="users">
+          <span class="nav-icon">◉</span>
+          <span class="nav-label">Usuarios</span>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-settings nav-item" data-tab="settings">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-label">Configuración</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════
+       MAIN CONTENT
+  ══════════════════════════════════════════ -->
+  <main class="main-content" id="main-content">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="btn-icon" id="btn-menu-toggle" aria-label="Abrir menú">☰</button>
+        <h1 class="page-title" id="page-title">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <!-- RF24: Modo claro/oscuro -->
+        <button class="btn-theme-toggle" id="btn-theme-toggle" aria-label="Cambiar tema">
+          <span class="theme-icon-dark">☽</span>
+          <span class="theme-icon-light">☀</span>
+        </button>
+        <button class="btn-primary btn-sm" id="btn-quick-add">+ Nueva Tarea</button>
+      </div>
+    </header>
+
+    <!-- ─── TOAST / NOTIFICACIONES (RF29) ─── -->
+    <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+    <!-- ═══════════════════════
+         TAB: DASHBOARD (RF13, RF14)
+    ════════════════════════════ -->
+    <section class="tab-content active" id="tab-dashboard">
+      <div class="section-intro">
+        <p class="greeting">Bienvenido de vuelta 👋</p>
+        <p class="sub-greeting">Aquí está el resumen de tu actividad</p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid" id="dashboard-stats">
+        <div class="stat-card" id="stat-total-projects">
+          <div class="stat-label">Total de Proyectos</div>
+          <div class="stat-value" id="val-total-projects">3</div>
+          <div class="stat-trend up">↑ 1 este mes</div>
+        </div>
+        <div class="stat-card accent" id="stat-pending">
+          <div class="stat-label">Tareas Pendientes</div>
+          <div class="stat-value" id="val-pending-tasks">8</div>
+          <div class="stat-trend">Sin cambios</div>
+        </div>
+        <div class="stat-card" id="stat-completed">
+          <div class="stat-label">Tareas Completadas</div>
+          <div class="stat-value" id="val-completed-tasks">14</div>
+          <div class="stat-trend up">↑ 3 esta semana</div>
+        </div>
+        <div class="stat-card" id="stat-progress">
+          <div class="stat-label">Progreso Global</div>
+          <div class="stat-value" id="val-global-progress">63%</div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" id="global-progress-bar" style="--pct: 63%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity (RF14) -->
+      <div class="panel" id="recent-activity-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Actividad Reciente</h2>
+        </div>
+        <ul class="activity-list" id="activity-list">
+          <li class="activity-item">
+            <span class="activity-dot status-done"></span>
+            <span class="activity-text">Tarea <strong>Diseñar mockups</strong> marcada como completada</span>
+            <span class="activity-time">Hace 2h</span>
+          </li>
+          <li class="activity-item">
+            <span class="activity-dot status-progress"></span>
+            <span class="activity-text">Proyecto <strong>App Móvil</strong> actualizado</span>
+            <span class="activity-time">Hace 5h</span>
+          </li>
+          <li class="activity-item">
+            <span class="activity-dot status-pending"></span>
+            <span class="activity-text">Nueva tarea <strong>Escribir pruebas unitarias</strong> creada</span>
+            <span class="activity-time">Ayer</span>
+          </li>
+          <li class="activity-item">
+            <span class="activity-dot status-done"></span>
+            <span class="activity-text">Tarea <strong>Configurar entorno</strong> completada</span>
+            <span class="activity-time">Hace 2 días</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Proyectos rápidos -->
+      <div class="panel" id="quick-projects-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Mis Proyectos</h2>
+          <button class="btn-link" data-tab="projects">Ver todos →</button>
+        </div>
+        <ul class="project-quick-list" id="quick-project-list">
+          <li class="project-quick-item">
+            <div class="project-color" style="--clr: #6c63ff"></div>
+            <span class="project-quick-name">App Móvil</span>
+            <div class="mini-progress">
+              <div class="mini-bar" style="--pct: 70%"></div>
+            </div>
+            <span class="mini-pct">70%</span>
+          </li>
+          <li class="project-quick-item">
+            <div class="project-color" style="--clr: #f7b731"></div>
+            <span class="project-quick-name">Portafolio Web</span>
+            <div class="mini-progress">
+              <div class="mini-bar" style="--pct: 45%"></div>
+            </div>
+            <span class="mini-pct">45%</span>
+          </li>
+          <li class="project-quick-item">
+            <div class="project-color" style="--clr: #20bf6b"></div>
+            <span class="project-quick-name">API REST</span>
+            <div class="mini-progress">
+              <div class="mini-bar" style="--pct: 30%"></div>
+            </div>
+            <span class="mini-pct">30%</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════
+         TAB: PROYECTOS (RF1–RF4, RF16)
+    ════════════════════════════ -->
+    <section class="tab-content" id="tab-projects">
+      <div class="section-toolbar">
+        <div class="toolbar-left">
+          <input type="search" class="input-search" id="search-projects" placeholder="Buscar proyectos…" aria-label="Buscar proyectos" />
+        </div>
+        <div class="toolbar-right">
+          <!-- RF1 -->
+          <button class="btn-primary" id="btn-new-project">+ Nuevo Proyecto</button>
+        </div>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="projects-grid" id="projects-grid">
+
+        <!-- Project Card (RF2, RF3, RF16) -->
+        <article class="project-card" data-project-id="1">
+          <div class="project-card-header" style="--accent: #6c63ff">
+            <span class="project-card-icon">📱</span>
+            <div class="project-card-actions">
+              <button class="btn-icon btn-edit-project" aria-label="Editar proyecto">✎</button>
+              <button class="btn-icon btn-delete-project" aria-label="Eliminar proyecto">✕</button>
+            </div>
+          </div>
+          <div class="project-card-body">
+            <h3 class="project-card-name">App Móvil</h3>
+            <p class="project-card-desc">Aplicación de gestión de hábitos para iOS y Android.</p>
+            <div class="project-meta">
+              <span class="meta-chip">📅 30 Abr 2025</span>
+              <span class="meta-chip">🗂 12 tareas</span>
+            </div>
+            <!-- RF16 -->
+            <div class="project-progress-row">
+              <span class="progress-label">Avance</span>
+              <span class="progress-pct" data-pct="70">70%</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar" style="--pct: 70%; --bar-clr: #6c63ff"></div>
+            </div>
+          </div>
+          <div class="project-card-footer">
+            <button class="btn-secondary btn-sm btn-view-kanban" data-project-id="1">Ver Kanban</button>
+            <button class="btn-secondary btn-sm btn-view-tasks" data-project-id="1">Ver Tareas</button>
+          </div>
+        </article>
+
+        <article class="project-card" data-project-id="2">
+          <div class="project-card-header" style="--accent: #f7b731">
+            <span class="project-card-icon">🌐</span>
+            <div class="project-card-actions">
+              <button class="btn-icon btn-edit-project" aria-label="Editar proyecto">✎</button>
+              <button class="btn-icon btn-delete-project" aria-label="Eliminar proyecto">✕</button>
+            </div>
+          </div>
+          <div class="project-card-body">
+            <h3 class="project-card-name">Portafolio Web</h3>
+            <p class="project-card-desc">Sitio personal con proyectos, blog y contacto.</p>
+            <div class="project-meta">
+              <span class="meta-chip">📅 15 May 2025</span>
+              <span class="meta-chip">🗂 7 tareas</span>
+            </div>
+            <div class="project-progress-row">
+              <span class="progress-label">Avance</span>
+              <span class="progress-pct" data-pct="45">45%</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar" style="--pct: 45%; --bar-clr: #f7b731"></div>
+            </div>
+          </div>
+          <div class="project-card-footer">
+            <button class="btn-secondary btn-sm btn-view-kanban" data-project-id="2">Ver Kanban</button>
+            <button class="btn-secondary btn-sm btn-view-tasks" data-project-id="2">Ver Tareas</button>
+          </div>
+        </article>
+
+        <article class="project-card" data-project-id="3">
+          <div class="project-card-header" style="--accent: #20bf6b">
+            <span class="project-card-icon">⚙</span>
+            <div class="project-card-actions">
+              <button class="btn-icon btn-edit-project" aria-label="Editar proyecto">✎</button>
+              <button class="btn-icon btn-delete-project" aria-label="Eliminar proyecto">✕</button>
+            </div>
+          </div>
+          <div class="project-card-body">
+            <h3 class="project-card-name">API REST</h3>
+            <p class="project-card-desc">Backend Node.js con autenticación y base de datos.</p>
+            <div class="project-meta">
+              <span class="meta-chip">📅 1 Jun 2025</span>
+              <span class="meta-chip">🗂 5 tareas</span>
+            </div>
+            <div class="project-progress-row">
+              <span class="progress-label">Avance</span>
+              <span class="progress-pct" data-pct="30">30%</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar" style="--pct: 30%; --bar-clr: #20bf6b"></div>
+            </div>
+          </div>
+          <div class="project-card-footer">
+            <button class="btn-secondary btn-sm btn-view-kanban" data-project-id="3">Ver Kanban</button>
+            <button class="btn-secondary btn-sm btn-view-tasks" data-project-id="3">Ver Tareas</button>
+          </div>
+        </article>
+
+        <!-- Placeholder nueva tarjeta -->
+        <button class="project-card project-card-new" id="btn-add-project-card">
+          <span class="new-card-icon">+</span>
+          <span class="new-card-label">Crear Proyecto</span>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════
+         TAB: KANBAN (RF10–RF12)
+    ════════════════════════════ -->
+    <section class="tab-content" id="tab-kanban">
+      <div class="section-toolbar">
+        <div class="toolbar-left">
+          <!-- Selector de proyecto para el kanban -->
+          <select class="input-select" id="kanban-project-selector" aria-label="Seleccionar proyecto">
+            <option value="1">App Móvil</option>
+            <option value="2">Portafolio Web</option>
+            <option value="3">API REST</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <!-- RF5 -->
+          <button class="btn-primary" id="btn-new-task-kanban">+ Nueva Tarea</button>
+        </div>
+      </div>
+
+      <!-- Kanban Board -->
+      <div class="kanban-board" id="kanban-board">
+
+        <!-- Columna: Pendiente (RF9) -->
+        <div class="kanban-col" id="col-pending" data-status="pendiente">
+          <div class="kanban-col-header">
+            <span class="col-dot status-pending"></span>
+            <h3 class="col-title">Pendiente</h3>
+            <span class="col-count" id="count-pending">3</span>
+          </div>
+          <div class="kanban-cards" id="cards-pending" data-drop-zone="pendiente">
+
+            <!-- Task Card (RF6, RF7, RF8, RF11) -->
+            <div class="task-card" draggable="true" data-task-id="1" data-status="pendiente">
+              <div class="task-card-top">
+                <span class="priority-badge priority-high">Alta</span>
+                <div class="task-card-actions">
+                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
+                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
+                </div>
+              </div>
+              <p class="task-card-name">Definir arquitectura del sistema</p>
+              <div class="task-card-meta">
+                <span class="task-assignee" title="Asignado a">◉ Juan D.</span>
+                <span class="task-due">📅 28 Abr</span>
+              </div>
+            </div>
+
+            <div class="task-card" draggable="true" data-task-id="2" data-status="pendiente">
+              <div class="task-card-top">
+                <span class="priority-badge priority-medium">Media</span>
+                <div class="task-card-actions">
+                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
+                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
+                </div>
+              </div>
+              <p class="task-card-name">Escribir pruebas unitarias</p>
+              <div class="task-card-meta">
+                <span class="task-assignee">◉ Sin asignar</span>
+                <span class="task-due">📅 5 May</span>
+              </div>
+            </div>
+
+            <div class="task-card" draggable="true" data-task-id="3" data-status="pendiente">
+              <div class="task-card-top">
+                <span class="priority-badge priority-low">Baja</span>
+                <div class="task-card-actions">
+                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
+                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
+                </div>
+              </div>
+              <p class="task-card-name">Documentar endpoints de la API</p>
+              <div class="task-card-meta">
+                <span class="task-assignee">◉ Juan D.</span>
+                <span class="task-due">📅 12 May</span>
+              </div>
+            </div>
+
+          </div>
+          <button class="btn-add-task-col" data-status="pendiente">+ Agregar tarea</button>
+        </div>
+
+        <!-- Columna: En Progreso -->
+        <div class="kanban-col" id="col-progress" data-status="en-progreso">
+          <div class="kanban-col-header">
+            <span class="col-dot status-progress"></span>
+            <h3 class="col-title">En Progreso</h3>
+            <span class="col-count" id="count-progress">2</span>
+          </div>
+          <div class="kanban-cards" id="cards-progress" data-drop-zone="en-progreso">
+
+            <div class="task-card" draggable="true" data-task-id="4" data-status="en-progreso">
+              <div class="task-card-top">
+                <span class="priority-badge priority-high">Alta</span>
+                <div class="task-card-actions">
+                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
+                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
+                </div>
+              </div>
+              <p class="task-card-name">Diseñar mockups de pantallas principales</p>
+              <div class="task-card-meta">
+                <span class="task-assignee">◉ Juan D.</span>
+                <span class="task-due">📅 25 Abr</span>
+              </div>
+            </div>
+
+            <div class="task-card" draggable="true" data-task-id="5" data-status="en-progreso">
+              <div class="task-card-top">
+                <span class="priority-badge priority-medium">Media</span>
+                <div class="task-card-actions">
+                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
+                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
+                </div>
+              </div>
+              <p class="task-card-name">Configurar entorno de desarrollo</p>
+              <div class="task-card-meta">
+                <span class="task-assignee">◉ Sin asignar</span>
+                <span class="task-due">📅 22 Abr</span>
+              </div>
+            </div>
+
+          </div>
+          <button class="btn-add-task-col" data-status="en-progreso">+ Agregar tarea</button>
+        </div>
+
+        <!-- Columna: Terminado -->
+        <div class="kanban-col" id="col-done" data-status="terminado">
+          <div class="kanban-col-header">
+            <span class="col-dot status-done"></span>
+            <h3 class="col-title">Terminado</h3>
+            <span class="col-count" id="count-done">4</span>
+          </div>
+          <div class="kanban-cards" id="cards-done" data-drop-zone="terminado">
+
+            <div class="task-card task-done" draggable="true" data-task-id="6" data-status="terminado">
+              <div class="task-card-top">
+                <span class="priority-badge priority-high">Alta</span>
+                <div class="task-card-actions">
+                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
+                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
+                </div>
+              </div>
+              <p class="task-card-name">Levantamiento de requerimientos</p>
+              <div class="task-card-meta">
+                <span class="task-assignee">◉ Juan D.</span>
+                <span class="task-due">📅 10 Abr</span>
+              </div>
+            </div>
+
+            <div class="task-card task-done" draggable="true" data-task-id="7" data-status="terminado">
+              <div class="task-card-top">
+                <span class="priority-badge priority-low">Baja</span>
+                <div class="task-card-actions">
+                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
+                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
+                </div>
+              </div>
+              <p class="task-card-name">Crear repositorio en GitHub</p>
+              <div class="task-card-meta">
+                <span class="task-assignee">◉ Juan D.</span>
+                <span class="task-due">📅 8 Abr</span>
+              </div>
+            </div>
+
+          </div>
+          <button class="btn-add-task-col" data-status="terminado">+ Agregar tarea</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════
+         TAB: CALENDARIO (RF17, RF18)
+    ════════════════════════════ -->
+    <section class="tab-content" id="tab-calendar">
+      <div class="section-toolbar">
+        <div class="toolbar-left">
+          <button class="btn-icon" id="btn-prev-month" aria-label="Mes anterior">‹</button>
+          <h2 class="calendar-month-label" id="calendar-month-label">Abril 2025</h2>
+          <button class="btn-icon" id="btn-next-month" aria-label="Mes siguiente">›</button>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn-secondary btn-sm btn-today" id="btn-today">Hoy</button>
+        </div>
+      </div>
+
+      <!-- Días de la semana -->
+      <div class="calendar-grid" id="calendar-grid">
+        <div class="cal-weekday">Lun</div>
+        <div class="cal-weekday">Mar</div>
+        <div class="cal-weekday">Mié</div>
+        <div class="cal-weekday">Jue</div>
+        <div class="cal-weekday">Vie</div>
+        <div class="cal-weekday">Sáb</div>
+        <div class="cal-weekday">Dom</div>
+
+        <!-- Días del mes (RF17, RF18) -->
+        <div class="cal-day empty"></div>
+        <div class="cal-day">1</div>
+        <div class="cal-day">2</div>
+        <div class="cal-day">3</div>
+        <div class="cal-day">4</div>
+        <div class="cal-day">5</div>
+        <div class="cal-day">6</div>
+        <div class="cal-day">7</div>
+        <div class="cal-day">8</div>
+        <div class="cal-day">9</div>
+        <div class="cal-day">10</div>
+        <div class="cal-day">11</div>
+        <div class="cal-day">12</div>
+        <div class="cal-day">13</div>
+        <div class="cal-day">14</div>
+        <div class="cal-day today">15</div>
+        <div class="cal-day">16</div>
+        <div class="cal-day">17</div>
+        <div class="cal-day">18</div>
+        <div class="cal-day">19</div>
+        <div class="cal-day">20</div>
+        <div class="cal-day has-task">21<span class="cal-task-dot"></span></div>
+        <div class="cal-day">22</div>
+        <div class="cal-day has-task">23<span class="cal-task-dot"></span></div>
+        <div class="cal-day">24</div>
+        <div class="cal-day has-task">25<span class="cal-task-dot"></span></div>
+        <div class="cal-day">26</div>
+        <div class="cal-day">27</div>
+        <div class="cal-day has-task">28<span class="cal-task-dot"></span></div>
+        <div class="cal-day">29</div>
+        <div class="cal-day has-task deadline">30<span class="cal-task-dot"></span></div>
+      </div>
+
+      <!-- Tareas del día seleccionado -->
+      <div class="panel" id="calendar-day-tasks">
+        <div class="panel-header">
+          <h2 class="panel-title" id="calendar-selected-date">Tareas para el 15 de Abril</h2>
+        </div>
+        <ul class="task-list" id="calendar-task-list">
+          <li class="task-list-item">
+            <span class="priority-dot priority-high"></span>
+            <span class="task-list-name">Diseñar mockups de pantallas principales</span>
+            <span class="task-list-status status-progress-chip">En Progreso</span>
+          </li>
+        </ul>
+        <p class="empty-state" id="calendar-empty" style="display:none">No hay tareas para este día.</p>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════
+         TAB: ESTADÍSTICAS (RF15, RF16)
+    ════════════════════════════ -->
+    <section class="tab-content" id="tab-stats">
+
+      <div class="stats-charts-grid">
+
+        <!-- Gráfico de barras: tareas por estado -->
+        <div class="panel chart-panel" id="chart-tasks-by-status">
+          <div class="panel-header">
+            <h2 class="panel-title">Tareas por Estado</h2>
+          </div>
+          <div class="bar-chart" id="bar-chart-status" aria-label="Gráfico de barras tareas por estado">
+            <div class="bar-group">
+              <div class="bar-wrap">
+                <div class="bar" style="--h: 30%; --clr: #fc5c65" data-val="3"></div>
+              </div>
+              <span class="bar-label">Pendiente</span>
+            </div>
+            <div class="bar-group">
+              <div class="bar-wrap">
+                <div class="bar" style="--h: 20%; --clr: #f7b731" data-val="2"></div>
+              </div>
+              <span class="bar-label">En Progreso</span>
+            </div>
+            <div class="bar-group">
+              <div class="bar-wrap">
+                <div class="bar" style="--h: 70%; --clr: #20bf6b" data-val="7"></div>
+              </div>
+              <span class="bar-label">Terminado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfico de dona: prioridades -->
+        <div class="panel chart-panel" id="chart-tasks-by-priority">
+          <div class="panel-header">
+            <h2 class="panel-title">Tareas por Prioridad</h2>
+          </div>
+          <div class="donut-wrap" id="donut-priority" aria-label="Gráfico de dona prioridad">
+            <svg viewBox="0 0 100 100" class="donut-svg">
+              <!-- Alta: 40% -->
+              <circle class="donut-ring" cx="50" cy="50" r="38" />
+              <circle class="donut-seg" cx="50" cy="50" r="38"
+                stroke="#fc5c65"
+                stroke-dasharray="95 144"
+                stroke-dashoffset="0" />
+              <!-- Media: 35% -->
+              <circle class="donut-seg" cx="50" cy="50" r="38"
+                stroke="#f7b731"
+                stroke-dasharray="83 156"
+                stroke-dashoffset="-95" />
+              <!-- Baja: 25% -->
+              <circle class="donut-seg" cx="50" cy="50" r="38"
+                stroke="#20bf6b"
+                stroke-dasharray="59 180"
+                stroke-dashoffset="-178" />
+            </svg>
+            <div class="donut-legend">
+              <span><span class="legend-dot" style="--c:#fc5c65"></span> Alta — 4</span>
+              <span><span class="legend-dot" style="--c:#f7b731"></span> Media — 3</span>
+              <span><span class="legend-dot" style="--c:#20bf6b"></span> Baja — 2</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progreso por proyecto (RF16) -->
+        <div class="panel chart-panel full-width" id="chart-project-progress">
+          <div class="panel-header">
+            <h2 class="panel-title">Avance por Proyecto</h2>
+          </div>
+          <div class="project-progress-list" id="project-progress-list">
+            <div class="pp-row">
+              <span class="pp-name">App Móvil</span>
+              <div class="progress-bar-wrap pp-bar">
+                <div class="progress-bar" style="--pct: 70%; --bar-clr: #6c63ff"></div>
+              </div>
+              <span class="pp-pct">70%</span>
+            </div>
+            <div class="pp-row">
+              <span class="pp-name">Portafolio Web</span>
+              <div class="progress-bar-wrap pp-bar">
+                <div class="progress-bar" style="--pct: 45%; --bar-clr: #f7b731"></div>
+              </div>
+              <span class="pp-pct">45%</span>
+            </div>
+            <div class="pp-row">
+              <span class="pp-name">API REST</span>
+              <div class="progress-bar-wrap pp-bar">
+                <div class="progress-bar" style="--pct: 30%; --bar-clr: #20bf6b"></div>
+              </div>
+              <span class="pp-pct">30%</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════
+         TAB: USUARIOS (RF19, RF20)
+    ════════════════════════════ -->
+    <section class="tab-content" id="tab-users">
+      <div class="section-toolbar">
+        <div class="toolbar-left"></div>
+        <div class="toolbar-right">
+          <!-- RF19 -->
+          <button class="btn-primary" id="btn-new-user">+ Nuevo Usuario</button>
+        </div>
+      </div>
+
+      <div class="users-grid" id="users-grid">
+
+        <div class="user-card" data-user-id="1">
+          <div class="user-card-avatar">JD</div>
+          <div class="user-card-info">
+            <h3 class="user-card-name" id="user-name-1">Juan Díaz</h3>
+            <span class="user-card-tasks">5 tareas asignadas</span>
+          </div>
+          <div class="user-card-actions">
+            <button class="btn-icon btn-edit-user" aria-label="Editar usuario">✎</button>
+            <button class="btn-icon btn-delete-user" aria-label="Eliminar usuario">✕</button>
+          </div>
+        </div>
+
+        <div class="user-card" data-user-id="2">
+          <div class="user-card-avatar" style="--av-clr: #20bf6b">MR</div>
+          <div class="user-card-info">
+            <h3 class="user-card-name" id="user-name-2">María Ramírez</h3>
+            <span class="user-card-tasks">2 tareas asignadas</span>
+          </div>
+          <div class="user-card-actions">
+            <button class="btn-icon btn-edit-user" aria-label="Editar usuario">✎</button>
+            <button class="btn-icon btn-delete-user" aria-label="Eliminar usuario">✕</button>
+          </div>
+        </div>
+
+        <button class="user-card user-card-new" id="btn-add-user-card">
+          <span class="new-card-icon">+</span>
+          <span class="new-card-label">Agregar Usuario</span>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════
+         TAB: CONFIGURACIÓN (RF21–RF26)
+    ════════════════════════════ -->
+    <section class="tab-content" id="tab-settings">
+
+      <div class="settings-grid">
+
+        <!-- Apariencia -->
+        <div class="panel settings-panel" id="settings-appearance">
+          <h2 class="settings-section-title">Apariencia</h2>
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">Modo oscuro / claro</span>
+              <span class="setting-desc">Cambia el tema de la interfaz (RF24)</span>
+            </div>
+            <!-- RF24 -->
+            <button class="toggle-switch" id="toggle-dark-mode" role="switch" aria-checked="true" aria-label="Modo oscuro">
+              <span class="toggle-knob"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Datos -->
+        <div class="panel settings-panel" id="settings-data">
+          <h2 class="settings-section-title">Gestión de Datos</h2>
+          <!-- RF25 -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">Exportar datos</span>
+              <span class="setting-desc">Descarga todos tus proyectos y tareas en JSON (RF25)</span>
+            </div>
+            <button class="btn-secondary" id="btn-export-json">Exportar JSON</button>
+          </div>
+          <!-- RF26 -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">Importar datos</span>
+              <span class="setting-desc">Carga proyectos y tareas desde un archivo JSON (RF26)</span>
+            </div>
+            <label class="btn-secondary" for="input-import-json">Importar JSON</label>
+            <input type="file" id="input-import-json" accept=".json" class="visually-hidden" aria-label="Seleccionar archivo JSON para importar" />
+          </div>
+          <!-- RF23 -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">Borrar todos los datos</span>
+              <span class="setting-desc">Elimina todo el contenido guardado en LocalStorage (RF23)</span>
+            </div>
+            <button class="btn-danger" id="btn-clear-data">Borrar Todo</button>
+          </div>
+        </div>
+
+        <!-- Info del sistema -->
+        <div class="panel settings-panel" id="settings-info">
+          <h2 class="settings-section-title">Acerca del Sistema</h2>
+          <div class="setting-row">
+            <span class="setting-label">Versión</span>
+            <span class="setting-value mono">1.0.0</span>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Almacenamiento usado</span>
+            <span class="setting-value mono" id="val-storage-used">2.3 KB / 5 MB</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════
+       MODALS
+  ══════════════════════════════════════════ -->
+
+  <!-- OVERLAY -->
+  <div class="modal-overlay" id="modal-overlay"></div>
+
+  <!-- Modal: Crear / Editar Proyecto (RF1, RF2, RF27, RF28, RF29) -->
+  <dialog class="modal" id="modal-project" aria-modal="true" aria-labelledby="modal-project-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-project-title">Nuevo Proyecto</h2>
+      <button class="btn-icon modal-close" id="close-modal-project" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" for="project-name">Nombre del Proyecto <span class="required">*</span></label>
+        <input type="text" id="project-name" class="input-text" placeholder="Ej. App Móvil" maxlength="80" required />
+        <span class="field-error" id="error-project-name"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="project-desc">Descripción</label>
+        <textarea id="project-desc" class="input-textarea" placeholder="Breve descripción del proyecto…" rows="3" maxlength="300"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="project-deadline">Fecha Límite</label>
+        <input type="date" id="project-deadline" class="input-text" />
+        <span class="field-error" id="error-project-deadline"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Color de Acento</label>
+        <div class="color-picker" id="project-color-picker" role="group" aria-label="Seleccionar color de acento">
+          <button class="color-swatch active" style="--sw:#6c63ff" data-color="#6c63ff" aria-label="Índigo"></button>
+          <button class="color-swatch" style="--sw:#f7b731" data-color="#f7b731" aria-label="Ámbar"></button>
+          <button class="color-swatch" style="--sw:#20bf6b" data-color="#20bf6b" aria-label="Verde"></button>
+          <button class="color-swatch" style="--sw:#fc5c65" data-color="#fc5c65" aria-label="Rojo"></button>
+          <button class="color-swatch" style="--sw:#45aaf2" data-color="#45aaf2" aria-label="Azul"></button>
+          <button class="color-swatch" style="--sw:#fd9644" data-color="#fd9644" aria-label="Naranja"></button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="btn-cancel-project">Cancelar</button>
+      <button class="btn-primary" id="btn-save-project">Guardar Proyecto</button>
+    </div>
+  </dialog>
+
+  <!-- Modal: Crear / Editar Tarea (RF5, RF6, RF8, RF9, RF20, RF27, RF28, RF29) -->
+  <dialog class="modal" id="modal-task" aria-modal="true" aria-labelledby="modal-task-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-task-title">Nueva Tarea</h2>
+      <button class="btn-icon modal-close" id="close-modal-task" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" for="task-name">Nombre de la Tarea <span class="required">*</span></label>
+        <input type="text" id="task-name" class="input-text" placeholder="Ej. Diseñar wireframes" maxlength="120" required />
+        <span class="field-error" id="error-task-name"></span>
+      </div>
+      <div class="form-row">
+        <!-- RF8: Prioridad -->
+        <div class="form-group half">
+          <label class="form-label" for="task-priority">Prioridad <span class="required">*</span></label>
+          <select id="task-priority" class="input-select" required>
+            <option value="">Seleccionar…</option>
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+        <!-- RF9: Estado -->
+        <div class="form-group half">
+          <label class="form-label" for="task-status">Estado <span class="required">*</span></label>
+          <select id="task-status" class="input-select" required>
+            <option value="pendiente">Pendiente</option>
+            <option value="en-progreso">En Progreso</option>
+            <option value="terminado">Terminado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group half">
+          <label class="form-label" for="task-deadline">Fecha Límite</label>
+          <input type="date" id="task-deadline" class="input-text" />
+          <span class="field-error" id="error-task-deadline"></span>
+        </div>
+        <!-- RF20: Asignar usuario -->
+        <div class="form-group half">
+          <label class="form-label" for="task-assignee">Asignar a</label>
+          <select id="task-assignee" class="input-select">
+            <option value="">Sin asignar</option>
+            <option value="1">Juan Díaz</option>
+            <option value="2">María Ramírez</option>
+          </select>
+        </div>
+      </div>
+      <!-- Proyecto -->
+      <div class="form-group">
+        <label class="form-label" for="task-project">Proyecto <span class="required">*</span></label>
+        <select id="task-project" class="input-select" required>
+          <option value="">Seleccionar proyecto…</option>
+          <option value="1">App Móvil</option>
+          <option value="2">Portafolio Web</option>
+          <option value="3">API REST</option>
+        </select>
+        <span class="field-error" id="error-task-project"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="btn-cancel-task">Cancelar</button>
+      <button class="btn-primary" id="btn-save-task">Guardar Tarea</button>
+    </div>
+  </dialog>
+
+  <!-- Modal: Crear Usuario (RF19) -->
+  <dialog class="modal modal-sm" id="modal-user" aria-modal="true" aria-labelledby="modal-user-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-user-title">Nuevo Usuario</h2>
+      <button class="btn-icon modal-close" id="close-modal-user" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" for="user-name">Nombre <span class="required">*</span></label>
+        <input type="text" id="user-name" class="input-text" placeholder="Nombre completo" maxlength="60" required />
+        <span class="field-error" id="error-user-name"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="btn-cancel-user">Cancelar</button>
+      <button class="btn-primary" id="btn-save-user">Crear Usuario</button>
+    </div>
+  </dialog>
+
+  <!-- Modal: Confirmar Eliminación (RF3, RF7, RF29) -->
+  <dialog class="modal modal-sm" id="modal-confirm" aria-modal="true" aria-labelledby="modal-confirm-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-confirm-title">Confirmar Eliminación</h2>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text" id="modal-confirm-text">¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="btn-cancel-confirm">Cancelar</button>
+      <button class="btn-danger" id="btn-confirm-delete">Eliminar</button>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
