@@ -166,30 +166,7 @@
           <button class="btn-link" data-tab="projects">Ver todos →</button>
         </div>
         <ul class="project-quick-list" id="quick-project-list">
-          <li class="project-quick-item">
-            <div class="project-color" style="--clr: #6c63ff"></div>
-            <span class="project-quick-name">App Móvil</span>
-            <div class="mini-progress">
-              <div class="mini-bar" style="--pct: 70%"></div>
-            </div>
-            <span class="mini-pct">70%</span>
-          </li>
-          <li class="project-quick-item">
-            <div class="project-color" style="--clr: #f7b731"></div>
-            <span class="project-quick-name">Portafolio Web</span>
-            <div class="mini-progress">
-              <div class="mini-bar" style="--pct: 45%"></div>
-            </div>
-            <span class="mini-pct">45%</span>
-          </li>
-          <li class="project-quick-item">
-            <div class="project-color" style="--clr: #20bf6b"></div>
-            <span class="project-quick-name">API REST</span>
-            <div class="mini-progress">
-              <div class="mini-bar" style="--pct: 30%"></div>
-            </div>
-            <span class="mini-pct">30%</span>
-          </li>
+          <!-- Renderizado por JS -->
         </ul>
       </div>
     </section>
@@ -198,115 +175,54 @@
          TAB: PROYECTOS (RF1–RF4, RF16)
     ════════════════════════════ -->
     <section class="tab-content" id="tab-projects">
+
+      <!-- Toolbar principal -->
       <div class="section-toolbar">
         <div class="toolbar-left">
-          <input type="search" class="input-search" id="search-projects" placeholder="Buscar proyectos…" aria-label="Buscar proyectos" />
+          <input type="search" class="input-search" id="search-projects"
+                 placeholder="Buscar proyectos…" aria-label="Buscar proyectos"
+                 autocomplete="off" />
         </div>
         <div class="toolbar-right">
+          <!-- Toggles de vista -->
+          <div class="view-toggle" id="view-toggle" role="group" aria-label="Cambiar vista">
+            <button class="view-btn active" id="btn-view-grid" data-view="grid"
+                    aria-label="Vista cuadrícula" title="Vista cuadrícula">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <rect x="0" y="0" width="6" height="6" rx="1"/><rect x="8" y="0" width="6" height="6" rx="1"/>
+                <rect x="0" y="8" width="6" height="6" rx="1"/><rect x="8" y="8" width="6" height="6" rx="1"/>
+              </svg>
+            </button>
+            <button class="view-btn" id="btn-view-list" data-view="list"
+                    aria-label="Vista lista" title="Vista lista">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <rect x="0" y="1" width="14" height="2" rx="1"/>
+                <rect x="0" y="6" width="14" height="2" rx="1"/>
+                <rect x="0" y="11" width="14" height="2" rx="1"/>
+              </svg>
+            </button>
+          </div>
           <!-- RF1 -->
           <button class="btn-primary" id="btn-new-project">+ Nuevo Proyecto</button>
         </div>
       </div>
 
-      <!-- Projects Grid -->
-      <div class="projects-grid" id="projects-grid">
+      <!-- Contador de resultados -->
+      <p class="projects-count" id="projects-count"></p>
 
-        <!-- Project Card (RF2, RF3, RF16) -->
-        <article class="project-card" data-project-id="1">
-          <div class="project-card-header" style="--accent: #6c63ff">
-            <span class="project-card-icon">📱</span>
-            <div class="project-card-actions">
-              <button class="btn-icon btn-edit-project" aria-label="Editar proyecto">✎</button>
-              <button class="btn-icon btn-delete-project" aria-label="Eliminar proyecto">✕</button>
-            </div>
-          </div>
-          <div class="project-card-body">
-            <h3 class="project-card-name">App Móvil</h3>
-            <p class="project-card-desc">Aplicación de gestión de hábitos para iOS y Android.</p>
-            <div class="project-meta">
-              <span class="meta-chip">📅 30 Abr 2025</span>
-              <span class="meta-chip">🗂 12 tareas</span>
-            </div>
-            <!-- RF16 -->
-            <div class="project-progress-row">
-              <span class="progress-label">Avance</span>
-              <span class="progress-pct" data-pct="70">70%</span>
-            </div>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" style="--pct: 70%; --bar-clr: #6c63ff"></div>
-            </div>
-          </div>
-          <div class="project-card-footer">
-            <button class="btn-secondary btn-sm btn-view-kanban" data-project-id="1">Ver Kanban</button>
-            <button class="btn-secondary btn-sm btn-view-tasks" data-project-id="1">Ver Tareas</button>
-          </div>
-        </article>
-
-        <article class="project-card" data-project-id="2">
-          <div class="project-card-header" style="--accent: #f7b731">
-            <span class="project-card-icon">🌐</span>
-            <div class="project-card-actions">
-              <button class="btn-icon btn-edit-project" aria-label="Editar proyecto">✎</button>
-              <button class="btn-icon btn-delete-project" aria-label="Eliminar proyecto">✕</button>
-            </div>
-          </div>
-          <div class="project-card-body">
-            <h3 class="project-card-name">Portafolio Web</h3>
-            <p class="project-card-desc">Sitio personal con proyectos, blog y contacto.</p>
-            <div class="project-meta">
-              <span class="meta-chip">📅 15 May 2025</span>
-              <span class="meta-chip">🗂 7 tareas</span>
-            </div>
-            <div class="project-progress-row">
-              <span class="progress-label">Avance</span>
-              <span class="progress-pct" data-pct="45">45%</span>
-            </div>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" style="--pct: 45%; --bar-clr: #f7b731"></div>
-            </div>
-          </div>
-          <div class="project-card-footer">
-            <button class="btn-secondary btn-sm btn-view-kanban" data-project-id="2">Ver Kanban</button>
-            <button class="btn-secondary btn-sm btn-view-tasks" data-project-id="2">Ver Tareas</button>
-          </div>
-        </article>
-
-        <article class="project-card" data-project-id="3">
-          <div class="project-card-header" style="--accent: #20bf6b">
-            <span class="project-card-icon">⚙</span>
-            <div class="project-card-actions">
-              <button class="btn-icon btn-edit-project" aria-label="Editar proyecto">✎</button>
-              <button class="btn-icon btn-delete-project" aria-label="Eliminar proyecto">✕</button>
-            </div>
-          </div>
-          <div class="project-card-body">
-            <h3 class="project-card-name">API REST</h3>
-            <p class="project-card-desc">Backend Node.js con autenticación y base de datos.</p>
-            <div class="project-meta">
-              <span class="meta-chip">📅 1 Jun 2025</span>
-              <span class="meta-chip">🗂 5 tareas</span>
-            </div>
-            <div class="project-progress-row">
-              <span class="progress-label">Avance</span>
-              <span class="progress-pct" data-pct="30">30%</span>
-            </div>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar" style="--pct: 30%; --bar-clr: #20bf6b"></div>
-            </div>
-          </div>
-          <div class="project-card-footer">
-            <button class="btn-secondary btn-sm btn-view-kanban" data-project-id="3">Ver Kanban</button>
-            <button class="btn-secondary btn-sm btn-view-tasks" data-project-id="3">Ver Tareas</button>
-          </div>
-        </article>
-
-        <!-- Placeholder nueva tarjeta -->
-        <button class="project-card project-card-new" id="btn-add-project-card">
-          <span class="new-card-icon">+</span>
-          <span class="new-card-label">Crear Proyecto</span>
-        </button>
-
+      <!-- Contenedor dinámico de proyectos (grid o lista) -->
+      <div class="projects-container projects-grid" id="projects-container">
+        <!-- Renderizado por JS -->
       </div>
+
+      <!-- Estado vacío -->
+      <div class="empty-projects" id="empty-projects" style="display:none">
+        <div class="empty-icon">◫</div>
+        <h3 class="empty-title">Sin proyectos aún</h3>
+        <p class="empty-desc">Crea tu primer proyecto para empezar a organizar tus tareas.</p>
+        <button class="btn-primary" id="btn-empty-new-project">+ Crear Primer Proyecto</button>
+      </div>
+
     </section>
 
     <!-- ═══════════════════════
@@ -791,6 +707,7 @@
       <div class="form-group">
         <label class="form-label" for="project-desc">Descripción</label>
         <textarea id="project-desc" class="input-textarea" placeholder="Breve descripción del proyecto…" rows="3" maxlength="300"></textarea>
+        <span class="char-counter" id="desc-counter">0 / 300</span>
       </div>
       <div class="form-group">
         <label class="form-label" for="project-deadline">Fecha Límite</label>
