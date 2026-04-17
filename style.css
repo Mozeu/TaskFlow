@@ -1295,6 +1295,214 @@ a { color: var(--accent); text-decoration: none; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* ═══════════════════════════════════════════════
+   KANBAN — ESTADO VACÍO
+═══════════════════════════════════════════════ */
+.kanban-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+/* Columna vacía interna */
+.kanban-col-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 12px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+  opacity: 0.6;
+  user-select: none;
+  pointer-events: none;
+}
+.kanban-col-empty-icon { font-size: 1.4rem; }
+
+/* ═══════════════════════════════════════════════
+   KANBAN — DRAG & DROP (RF11, RF12)
+═══════════════════════════════════════════════ */
+
+/* Tarjeta siendo arrastrada */
+.task-card.is-dragging {
+  opacity: 0.35;
+  transform: scale(0.97);
+  box-shadow: none;
+  cursor: grabbing;
+}
+
+/* Clon fantasma — se aplica al dragImage vía JS */
+.drag-ghost {
+  position: fixed;
+  top: -9999px;
+  background: var(--bg-surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  font-size: 0.85rem;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-primary);
+  pointer-events: none;
+  z-index: 9999;
+  box-shadow: var(--shadow-lg);
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Zona de drop activa */
+.kanban-cards.drag-over {
+  background: var(--accent-glow);
+  border-radius: var(--radius-md);
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+  min-height: 80px;
+  transition: background 0.15s ease;
+}
+
+/* Indicador de posición de inserción */
+.drop-indicator {
+  height: 3px;
+  background: var(--accent);
+  border-radius: 99px;
+  margin: 2px 0;
+  box-shadow: 0 0 8px var(--accent-glow);
+  animation: pulse-bar 0.8s ease infinite alternate;
+}
+@keyframes pulse-bar {
+  from { opacity: 0.7; }
+  to   { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════
+   TASK CARD — EXPANDIDA
+═══════════════════════════════════════════════ */
+.task-card {
+  position: relative;
+}
+/* Barra de prioridad izquierda */
+.task-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--priority-clr, transparent);
+  transition: background var(--transition);
+}
+.task-card[data-priority="alta"]   { --priority-clr: var(--danger); }
+.task-card[data-priority="media"]  { --priority-clr: var(--warning); }
+.task-card[data-priority="baja"]   { --priority-clr: var(--success); }
+
+/* Descripción truncada en la tarjeta */
+.task-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  /* Máximo 2 líneas con ellipsis */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+/* Footer de la tarjeta (deadline) */
+.task-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-subtle);
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.task-due {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+}
+.task-due.due-overdue { color: var(--danger);  font-weight: 600; }
+.task-due.due-soon    { color: var(--warning); font-weight: 600; }
+
+/* Separar nombre + desc del footer */
+.task-card-name { margin-top: 4px; }
+
+/* ═══════════════════════════════════════════════
+   PRIORITY SELECTOR (modal)
+═══════════════════════════════════════════════ */
+.priority-selector {
+  display: flex;
+  gap: 8px;
+}
+.priority-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-raised);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.priority-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.priority-btn .priority-btn-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background var(--transition);
+}
+
+/* Alta */
+.priority-btn[data-priority="alta"] .priority-btn-dot  { background: var(--danger); }
+.priority-btn[data-priority="alta"].active {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: rgba(252,92,101,0.1);
+}
+/* Media */
+.priority-btn[data-priority="media"] .priority-btn-dot { background: var(--warning); }
+.priority-btn[data-priority="media"].active {
+  border-color: var(--warning);
+  color: var(--warning);
+  background: rgba(247,183,49,0.1);
+}
+/* Baja */
+.priority-btn[data-priority="baja"] .priority-btn-dot  { background: var(--success); }
+.priority-btn[data-priority="baja"].active {
+  border-color: var(--success);
+  color: var(--success);
+  background: rgba(32,191,107,0.1);
+}
+
+/* Selector con error */
+.priority-selector.has-error .priority-btn {
+  border-color: var(--danger);
+}
+
+/* ═══════════════════════════════════════════════
+   KANBAN — selector de proyecto en toolbar
+═══════════════════════════════════════════════ */
+.kanban-selector {
+  min-width: 220px;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════════ */
 @media (max-width: 1100px) {

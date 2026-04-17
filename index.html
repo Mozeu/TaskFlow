@@ -226,168 +226,82 @@
     </section>
 
     <!-- ═══════════════════════
-         TAB: KANBAN (RF10–RF12)
+         TAB: KANBAN (RF5–RF12)
     ════════════════════════════ -->
     <section class="tab-content" id="tab-kanban">
+
+      <!-- Toolbar -->
       <div class="section-toolbar">
         <div class="toolbar-left">
-          <!-- Selector de proyecto para el kanban -->
-          <select class="input-select" id="kanban-project-selector" aria-label="Seleccionar proyecto">
-            <option value="1">App Móvil</option>
-            <option value="2">Portafolio Web</option>
-            <option value="3">API REST</option>
+          <select class="input-select kanban-selector" id="kanban-project-selector"
+                  aria-label="Seleccionar proyecto">
+            <option value="">— Selecciona un proyecto —</option>
           </select>
         </div>
         <div class="toolbar-right">
-          <!-- RF5 -->
-          <button class="btn-primary" id="btn-new-task-kanban">+ Nueva Tarea</button>
+          <button class="btn-primary" id="btn-new-task-kanban" disabled>+ Nueva Tarea</button>
         </div>
       </div>
 
-      <!-- Kanban Board -->
+      <!-- Estado vacío: sin proyectos -->
+      <div class="kanban-empty-state" id="kanban-no-projects" style="display:none">
+        <div class="empty-icon">◫</div>
+        <h3 class="empty-title">Sin proyectos</h3>
+        <p class="empty-desc">Crea un proyecto primero para poder gestionar sus tareas.</p>
+        <button class="btn-primary" id="btn-kanban-go-projects">Ir a Proyectos →</button>
+      </div>
+
+      <!-- Estado vacío: proyecto seleccionado pero sin tareas -->
+      <div class="kanban-empty-state" id="kanban-no-tasks" style="display:none">
+        <div class="empty-icon">✓</div>
+        <h3 class="empty-title">Sin tareas aún</h3>
+        <p class="empty-desc">Este proyecto no tiene tareas. Agrega la primera.</p>
+        <button class="btn-primary" id="btn-kanban-first-task">+ Crear Primera Tarea</button>
+      </div>
+
+      <!-- Tablero Kanban (RF10) — 3 columnas dinámicas -->
       <div class="kanban-board" id="kanban-board">
 
-        <!-- Columna: Pendiente (RF9) -->
-        <div class="kanban-col" id="col-pending" data-status="pendiente">
+        <!-- Columna: Pendiente -->
+        <div class="kanban-col" id="col-pendiente" data-status="pendiente">
           <div class="kanban-col-header">
             <span class="col-dot status-pending"></span>
             <h3 class="col-title">Pendiente</h3>
-            <span class="col-count" id="count-pending">3</span>
+            <span class="col-count" id="count-pendiente">0</span>
           </div>
-          <div class="kanban-cards" id="cards-pending" data-drop-zone="pendiente">
-
-            <!-- Task Card (RF6, RF7, RF8, RF11) -->
-            <div class="task-card" draggable="true" data-task-id="1" data-status="pendiente">
-              <div class="task-card-top">
-                <span class="priority-badge priority-high">Alta</span>
-                <div class="task-card-actions">
-                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
-                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
-                </div>
-              </div>
-              <p class="task-card-name">Definir arquitectura del sistema</p>
-              <div class="task-card-meta">
-                <span class="task-assignee" title="Asignado a">◉ Juan D.</span>
-                <span class="task-due">📅 28 Abr</span>
-              </div>
-            </div>
-
-            <div class="task-card" draggable="true" data-task-id="2" data-status="pendiente">
-              <div class="task-card-top">
-                <span class="priority-badge priority-medium">Media</span>
-                <div class="task-card-actions">
-                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
-                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
-                </div>
-              </div>
-              <p class="task-card-name">Escribir pruebas unitarias</p>
-              <div class="task-card-meta">
-                <span class="task-assignee">◉ Sin asignar</span>
-                <span class="task-due">📅 5 May</span>
-              </div>
-            </div>
-
-            <div class="task-card" draggable="true" data-task-id="3" data-status="pendiente">
-              <div class="task-card-top">
-                <span class="priority-badge priority-low">Baja</span>
-                <div class="task-card-actions">
-                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
-                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
-                </div>
-              </div>
-              <p class="task-card-name">Documentar endpoints de la API</p>
-              <div class="task-card-meta">
-                <span class="task-assignee">◉ Juan D.</span>
-                <span class="task-due">📅 12 May</span>
-              </div>
-            </div>
-
+          <!-- Zona de drop (RF11, RF12) -->
+          <div class="kanban-cards" id="cards-pendiente"
+               data-status="pendiente"
+               aria-label="Columna Pendiente — zona de soltar">
+            <!-- Renderizado por JS -->
           </div>
           <button class="btn-add-task-col" data-status="pendiente">+ Agregar tarea</button>
         </div>
 
         <!-- Columna: En Progreso -->
-        <div class="kanban-col" id="col-progress" data-status="en-progreso">
+        <div class="kanban-col" id="col-en-progreso" data-status="en-progreso">
           <div class="kanban-col-header">
             <span class="col-dot status-progress"></span>
             <h3 class="col-title">En Progreso</h3>
-            <span class="col-count" id="count-progress">2</span>
+            <span class="col-count" id="count-en-progreso">0</span>
           </div>
-          <div class="kanban-cards" id="cards-progress" data-drop-zone="en-progreso">
-
-            <div class="task-card" draggable="true" data-task-id="4" data-status="en-progreso">
-              <div class="task-card-top">
-                <span class="priority-badge priority-high">Alta</span>
-                <div class="task-card-actions">
-                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
-                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
-                </div>
-              </div>
-              <p class="task-card-name">Diseñar mockups de pantallas principales</p>
-              <div class="task-card-meta">
-                <span class="task-assignee">◉ Juan D.</span>
-                <span class="task-due">📅 25 Abr</span>
-              </div>
-            </div>
-
-            <div class="task-card" draggable="true" data-task-id="5" data-status="en-progreso">
-              <div class="task-card-top">
-                <span class="priority-badge priority-medium">Media</span>
-                <div class="task-card-actions">
-                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
-                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
-                </div>
-              </div>
-              <p class="task-card-name">Configurar entorno de desarrollo</p>
-              <div class="task-card-meta">
-                <span class="task-assignee">◉ Sin asignar</span>
-                <span class="task-due">📅 22 Abr</span>
-              </div>
-            </div>
-
+          <div class="kanban-cards" id="cards-en-progreso"
+               data-status="en-progreso"
+               aria-label="Columna En Progreso — zona de soltar">
           </div>
           <button class="btn-add-task-col" data-status="en-progreso">+ Agregar tarea</button>
         </div>
 
         <!-- Columna: Terminado -->
-        <div class="kanban-col" id="col-done" data-status="terminado">
+        <div class="kanban-col" id="col-terminado" data-status="terminado">
           <div class="kanban-col-header">
             <span class="col-dot status-done"></span>
             <h3 class="col-title">Terminado</h3>
-            <span class="col-count" id="count-done">4</span>
+            <span class="col-count" id="count-terminado">0</span>
           </div>
-          <div class="kanban-cards" id="cards-done" data-drop-zone="terminado">
-
-            <div class="task-card task-done" draggable="true" data-task-id="6" data-status="terminado">
-              <div class="task-card-top">
-                <span class="priority-badge priority-high">Alta</span>
-                <div class="task-card-actions">
-                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
-                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
-                </div>
-              </div>
-              <p class="task-card-name">Levantamiento de requerimientos</p>
-              <div class="task-card-meta">
-                <span class="task-assignee">◉ Juan D.</span>
-                <span class="task-due">📅 10 Abr</span>
-              </div>
-            </div>
-
-            <div class="task-card task-done" draggable="true" data-task-id="7" data-status="terminado">
-              <div class="task-card-top">
-                <span class="priority-badge priority-low">Baja</span>
-                <div class="task-card-actions">
-                  <button class="btn-icon btn-edit-task" aria-label="Editar tarea">✎</button>
-                  <button class="btn-icon btn-delete-task" aria-label="Eliminar tarea">✕</button>
-                </div>
-              </div>
-              <p class="task-card-name">Crear repositorio en GitHub</p>
-              <div class="task-card-meta">
-                <span class="task-assignee">◉ Juan D.</span>
-                <span class="task-due">📅 8 Abr</span>
-              </div>
-            </div>
-
+          <div class="kanban-cards" id="cards-terminado"
+               data-status="terminado"
+               aria-label="Columna Terminado — zona de soltar">
           </div>
           <button class="btn-add-task-col" data-status="terminado">+ Agregar tarea</button>
         </div>
@@ -732,70 +646,94 @@
     </div>
   </dialog>
 
-  <!-- Modal: Crear / Editar Tarea (RF5, RF6, RF8, RF9, RF20, RF27, RF28, RF29) -->
+  <!-- Modal: Crear / Editar Tarea (RF5, RF6, RF8, RF9, RF27–RF29) -->
   <dialog class="modal" id="modal-task" aria-modal="true" aria-labelledby="modal-task-title">
     <div class="modal-header">
       <h2 class="modal-title" id="modal-task-title">Nueva Tarea</h2>
       <button class="btn-icon modal-close" id="close-modal-task" aria-label="Cerrar">✕</button>
     </div>
     <div class="modal-body">
+
+      <!-- Nombre -->
       <div class="form-group">
-        <label class="form-label" for="task-name">Nombre de la Tarea <span class="required">*</span></label>
-        <input type="text" id="task-name" class="input-text" placeholder="Ej. Diseñar wireframes" maxlength="120" required />
+        <label class="form-label" for="task-name">
+          Nombre de la Tarea <span class="required">*</span>
+        </label>
+        <input type="text" id="task-name" class="input-text"
+               placeholder="Ej. Diseñar wireframes de login"
+               maxlength="120" autocomplete="off" required />
         <span class="field-error" id="error-task-name"></span>
       </div>
-      <div class="form-row">
-        <!-- RF8: Prioridad -->
-        <div class="form-group half">
-          <label class="form-label" for="task-priority">Prioridad <span class="required">*</span></label>
-          <select id="task-priority" class="input-select" required>
-            <option value="">Seleccionar…</option>
-            <option value="alta">Alta</option>
-            <option value="media">Media</option>
-            <option value="baja">Baja</option>
-          </select>
-        </div>
-        <!-- RF9: Estado -->
-        <div class="form-group half">
-          <label class="form-label" for="task-status">Estado <span class="required">*</span></label>
-          <select id="task-status" class="input-select" required>
-            <option value="pendiente">Pendiente</option>
-            <option value="en-progreso">En Progreso</option>
-            <option value="terminado">Terminado</option>
-          </select>
-        </div>
+
+      <!-- Descripción -->
+      <div class="form-group">
+        <label class="form-label" for="task-desc">Descripción</label>
+        <textarea id="task-desc" class="input-textarea"
+                  placeholder="Detalla qué hay que hacer, criterios de aceptación, notas…"
+                  rows="3" maxlength="500"></textarea>
+        <span class="char-counter" id="task-desc-counter">0 / 500</span>
       </div>
+
+      <!-- Prioridad (RF8) — selector visual de etiquetas -->
+      <div class="form-group">
+        <label class="form-label">
+          Prioridad <span class="required">*</span>
+        </label>
+        <div class="priority-selector" id="priority-selector"
+             role="group" aria-label="Seleccionar prioridad">
+          <button type="button" class="priority-btn" data-priority="alta"
+                  aria-pressed="false">
+            <span class="priority-btn-dot"></span> Alta
+          </button>
+          <button type="button" class="priority-btn" data-priority="media"
+                  aria-pressed="false">
+            <span class="priority-btn-dot"></span> Media
+          </button>
+          <button type="button" class="priority-btn" data-priority="baja"
+                  aria-pressed="false">
+            <span class="priority-btn-dot"></span> Baja
+          </button>
+        </div>
+        <span class="field-error" id="error-task-priority"></span>
+      </div>
+
       <div class="form-row">
+        <!-- Estado (RF9) -->
+        <div class="form-group half">
+          <label class="form-label" for="task-status">
+            Estado <span class="required">*</span>
+          </label>
+          <select id="task-status" class="input-select" required>
+            <option value="pendiente">⬜ Pendiente</option>
+            <option value="en-progreso">🔵 En Progreso</option>
+            <option value="terminado">✅ Terminado</option>
+          </select>
+        </div>
+
+        <!-- Fecha límite -->
         <div class="form-group half">
           <label class="form-label" for="task-deadline">Fecha Límite</label>
           <input type="date" id="task-deadline" class="input-text" />
           <span class="field-error" id="error-task-deadline"></span>
         </div>
-        <!-- RF20: Asignar usuario -->
-        <div class="form-group half">
-          <label class="form-label" for="task-assignee">Asignar a</label>
-          <select id="task-assignee" class="input-select">
-            <option value="">Sin asignar</option>
-            <option value="1">Juan Díaz</option>
-            <option value="2">María Ramírez</option>
-          </select>
-        </div>
       </div>
-      <!-- Proyecto -->
+
+      <!-- Proyecto (RF5) -->
       <div class="form-group">
-        <label class="form-label" for="task-project">Proyecto <span class="required">*</span></label>
+        <label class="form-label" for="task-project">
+          Proyecto <span class="required">*</span>
+        </label>
         <select id="task-project" class="input-select" required>
-          <option value="">Seleccionar proyecto…</option>
-          <option value="1">App Móvil</option>
-          <option value="2">Portafolio Web</option>
-          <option value="3">API REST</option>
+          <option value="">— Seleccionar proyecto —</option>
+          <!-- Poblado dinámicamente por JS -->
         </select>
         <span class="field-error" id="error-task-project"></span>
       </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" id="btn-cancel-task">Cancelar</button>
-      <button class="btn-primary" id="btn-save-task">Guardar Tarea</button>
+      <button class="btn-primary"   id="btn-save-task">Guardar Tarea</button>
     </div>
   </dialog>
 
@@ -833,5 +771,6 @@
   </dialog>
 
   <script src="app.js"></script>
+  <script src="tasks.js"></script>
 </body>
 </html>
