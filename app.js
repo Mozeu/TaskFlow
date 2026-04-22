@@ -434,6 +434,18 @@ const ProjectManager = {
     const name = project.name;
     State.projects = State.projects.filter(p => p.id !== id);
     Storage.save(State.projects);
+
+    /* FIX: Eliminar también todas las tareas del proyecto */
+    if (typeof KanbanState !== 'undefined') {
+      KanbanState.tasks = KanbanState.tasks.filter(t => t.projectId !== id);
+      if (typeof TaskStorage !== 'undefined') TaskStorage.save(KanbanState.tasks);
+    }
+    /* FIX: Eliminar membresías del proyecto */
+    if (typeof UsersState !== 'undefined') {
+      UsersState.memberships = UsersState.memberships.filter(m => m.projectId !== id);
+      if (typeof UsersStorage !== 'undefined') UsersStorage.saveMembers(UsersState.memberships);
+    }
+
     Renderer.renderAll();
     Toast.show(`Proyecto "${name}" eliminado.`, 'info');
     Activity.add(`Proyecto <strong>${esc(name)}</strong> eliminado`);
@@ -513,14 +525,20 @@ const Renderer = {
     const taskChip     = `<span class="meta-chip">🗂 ${p.taskCount || 0} tarea${(p.taskCount||0) !== 1 ? 's' : ''}</span>`;
     const pct          = p.progress || 0;
 
+    /* FIX: solo mostrar edit/delete si el usuario activo es admin del proyecto */
+    let canAdmin = true;
+    if (typeof UsersState !== 'undefined' && typeof UserManager !== 'undefined') {
+      canAdmin = UserManager.isActiveAdmin(p.id);
+    }
+    const adminActions = canAdmin ? `
+      <button class="btn-icon btn-edit-project"   data-id="${esc(p.id)}" aria-label="Editar proyecto">✎</button>
+      <button class="btn-icon btn-delete-project" data-id="${esc(p.id)}" aria-label="Eliminar proyecto">✕</button>` : '';
+
     return `
       <article class="project-card" data-project-id="${esc(p.id)}">
         <div class="project-card-header" style="--accent:${esc(p.color)}">
           <span class="project-card-icon">${p.icon || '🗂'}</span>
-          <div class="project-card-actions">
-            <button class="btn-icon btn-edit-project"   data-id="${esc(p.id)}" aria-label="Editar proyecto">✎</button>
-            <button class="btn-icon btn-delete-project" data-id="${esc(p.id)}" aria-label="Eliminar proyecto">✕</button>
-          </div>
+          <div class="project-card-actions">${adminActions}</div>
         </div>
         <div class="project-card-body">
           <h3 class="project-card-name">${esc(p.name)}</h3>

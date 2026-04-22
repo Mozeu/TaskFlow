@@ -23,14 +23,15 @@
       <button class="sidebar-toggle" id="btn-sidebar-toggle" aria-label="Cerrar menú">&#8249;</button>
     </div>
 
-    <!-- User Profile Switcher (RF19, RF20) -->
-    <div class="user-switcher" id="user-switcher">
-      <div class="user-avatar" id="current-user-avatar">JD</div>
+    <!-- User Profile Switcher (RF19) — dinámico -->
+    <div class="user-switcher" id="user-switcher" role="button" tabindex="0"
+         aria-label="Cambiar usuario activo" style="cursor:pointer">
+      <div class="user-avatar" id="current-user-avatar">?</div>
       <div class="user-info">
-        <span class="user-name" id="current-user-name">Juan Díaz</span>
-        <span class="user-role">Administrador</span>
+        <span class="user-name" id="current-user-name">Sin perfil</span>
+        <span class="user-role" id="current-user-role">—</span>
       </div>
-      <button class="btn-icon" id="btn-switch-user" aria-label="Cambiar usuario">&#8595;</button>
+      <button class="btn-icon" id="btn-switch-user" aria-label="Cambiar usuario">⇅</button>
     </div>
 
     <nav class="sidebar-nav" role="navigation" aria-label="Navegación principal">
@@ -82,13 +83,21 @@
         <button class="btn-icon" id="btn-menu-toggle" aria-label="Abrir menú">☰</button>
         <h1 class="page-title" id="page-title">Dashboard</h1>
       </div>
+
+      <!-- Selector global de proyecto (espacio de trabajo) -->
+      <div class="topbar-workspace" id="topbar-workspace">
+        <span class="workspace-label">Proyecto:</span>
+        <select class="input-select workspace-select" id="global-project-selector"
+                aria-label="Seleccionar proyecto de trabajo">
+          <option value="">— Sin proyecto —</option>
+        </select>
+      </div>
+
       <div class="topbar-right">
-        <!-- RF24: Modo claro/oscuro -->
         <button class="btn-theme-toggle" id="btn-theme-toggle" aria-label="Cambiar tema">
           <span class="theme-icon-dark">☽</span>
           <span class="theme-icon-light">☀</span>
         </button>
-        <button class="btn-primary btn-sm" id="btn-quick-add">+ Nueva Tarea</button>
       </div>
     </header>
 
@@ -99,75 +108,69 @@
          TAB: DASHBOARD (RF13, RF14)
     ════════════════════════════ -->
     <section class="tab-content active" id="tab-dashboard">
-      <div class="section-intro">
-        <p class="greeting">Bienvenido de vuelta 👋</p>
-        <p class="sub-greeting">Aquí está el resumen de tu actividad</p>
+
+      <!-- Saludo y fecha -->
+      <div class="db-topbar">
+        <div>
+          <p class="greeting" id="db-greeting">Bienvenido de vuelta 👋</p>
+          <p class="sub-greeting" id="db-date"></p>
+        </div>
+        <div class="db-project-context" id="db-project-context">
+          <!-- Renderizado por dashboard.js: muestra nombre del proyecto activo -->
+        </div>
       </div>
 
-      <!-- Stats Cards -->
-      <div class="stats-grid" id="dashboard-stats">
-        <div class="stat-card" id="stat-total-projects">
-          <div class="stat-label">Total de Proyectos</div>
-          <div class="stat-value" id="val-total-projects">3</div>
-          <div class="stat-trend up">↑ 1 este mes</div>
-        </div>
-        <div class="stat-card accent" id="stat-pending">
-          <div class="stat-label">Tareas Pendientes</div>
-          <div class="stat-value" id="val-pending-tasks">8</div>
-          <div class="stat-trend">Sin cambios</div>
-        </div>
-        <div class="stat-card" id="stat-completed">
-          <div class="stat-label">Tareas Completadas</div>
-          <div class="stat-value" id="val-completed-tasks">14</div>
-          <div class="stat-trend up">↑ 3 esta semana</div>
-        </div>
-        <div class="stat-card" id="stat-progress">
-          <div class="stat-label">Progreso Global</div>
-          <div class="stat-value" id="val-global-progress">63%</div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar" id="global-progress-bar" style="--pct: 63%"></div>
+      <!-- FILA 1: 4 stat cards -->
+      <div class="db-stats-row" id="db-stats-row">
+        <!-- Renderizado por dashboard.js -->
+      </div>
+
+      <!-- FILA 2: Tareas vencidas + Tareas de la semana + Actividad + Proyectos -->
+      <div class="db-content-grid" id="db-content-grid">
+
+        <!-- Tareas vencidas (todas las de todos los proyectos) -->
+        <div class="panel db-panel" id="db-overdue-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">⚠ Tareas Vencidas</h2>
+            <span class="db-badge-danger" id="db-overdue-count">0</span>
+          </div>
+          <div class="db-panel-body" id="db-overdue-body">
+            <!-- Renderizado por dashboard.js -->
           </div>
         </div>
-      </div>
 
-      <!-- Recent Activity (RF14) -->
-      <div class="panel" id="recent-activity-panel">
-        <div class="panel-header">
-          <h2 class="panel-title">Actividad Reciente</h2>
+        <!-- Tareas de la semana (todos los proyectos, diferenciadas por color) -->
+        <div class="panel db-panel db-panel-wide" id="db-week-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">📅 Esta Semana</h2>
+            <span class="db-week-range" id="db-week-range"></span>
+          </div>
+          <div class="db-panel-body" id="db-week-body">
+            <!-- Renderizado por dashboard.js -->
+          </div>
         </div>
-        <ul class="activity-list" id="activity-list">
-          <li class="activity-item">
-            <span class="activity-dot status-done"></span>
-            <span class="activity-text">Tarea <strong>Diseñar mockups</strong> marcada como completada</span>
-            <span class="activity-time">Hace 2h</span>
-          </li>
-          <li class="activity-item">
-            <span class="activity-dot status-progress"></span>
-            <span class="activity-text">Proyecto <strong>App Móvil</strong> actualizado</span>
-            <span class="activity-time">Hace 5h</span>
-          </li>
-          <li class="activity-item">
-            <span class="activity-dot status-pending"></span>
-            <span class="activity-text">Nueva tarea <strong>Escribir pruebas unitarias</strong> creada</span>
-            <span class="activity-time">Ayer</span>
-          </li>
-          <li class="activity-item">
-            <span class="activity-dot status-done"></span>
-            <span class="activity-text">Tarea <strong>Configurar entorno</strong> completada</span>
-            <span class="activity-time">Hace 2 días</span>
-          </li>
-        </ul>
-      </div>
 
-      <!-- Proyectos rápidos -->
-      <div class="panel" id="quick-projects-panel">
-        <div class="panel-header">
-          <h2 class="panel-title">Mis Proyectos</h2>
-          <button class="btn-link" data-tab="projects">Ver todos →</button>
+        <!-- Actividad reciente -->
+        <div class="panel db-panel" id="db-activity-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Actividad Reciente</h2>
+          </div>
+          <div class="db-panel-body" id="db-body-activity">
+            <!-- Renderizado por dashboard.js -->
+          </div>
         </div>
-        <ul class="project-quick-list" id="quick-project-list">
-          <!-- Renderizado por JS -->
-        </ul>
+
+        <!-- Mis proyectos -->
+        <div class="panel db-panel" id="db-projects-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Mis Proyectos</h2>
+            <button class="btn-link" data-tab="projects">Ver todos →</button>
+          </div>
+          <div class="db-panel-body" id="db-body-quick_projects">
+            <!-- Renderizado por dashboard.js -->
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -313,170 +316,165 @@
          TAB: CALENDARIO (RF17, RF18)
     ════════════════════════════ -->
     <section class="tab-content" id="tab-calendar">
-      <div class="section-toolbar">
-        <div class="toolbar-left">
-          <button class="btn-icon" id="btn-prev-month" aria-label="Mes anterior">‹</button>
-          <h2 class="calendar-month-label" id="calendar-month-label">Abril 2025</h2>
-          <button class="btn-icon" id="btn-next-month" aria-label="Mes siguiente">›</button>
+
+      <!-- ── Toolbar principal ── -->
+      <div class="section-toolbar cal-toolbar">
+        <!-- Navegación de período -->
+        <div class="toolbar-left cal-nav">
+          <button class="btn-icon cal-nav-btn" id="btn-cal-prev" aria-label="Período anterior">‹</button>
+          <h2 class="cal-period-label" id="cal-period-label">Abril 2025</h2>
+          <button class="btn-icon cal-nav-btn" id="btn-cal-next" aria-label="Período siguiente">›</button>
+          <button class="btn-secondary btn-sm" id="btn-cal-today">Hoy</button>
         </div>
-        <div class="toolbar-right">
-          <button class="btn-secondary btn-sm btn-today" id="btn-today">Hoy</button>
+
+        <div class="toolbar-right cal-controls">
+          <!-- Filtro por proyecto -->
+          <select class="input-select cal-project-filter" id="cal-project-filter"
+                  aria-label="Filtrar por proyecto">
+            <option value="">Todos los proyectos</option>
+          </select>
+
+          <!-- Toggle de vista: Diaria / Mensual / Anual -->
+          <div class="view-toggle" id="cal-view-toggle"
+               role="group" aria-label="Vista del calendario">
+            <button class="view-btn" data-cal-view="day"   title="Vista diaria">Día</button>
+            <button class="view-btn active" data-cal-view="month" title="Vista mensual">Mes</button>
+            <button class="view-btn" data-cal-view="year"  title="Vista anual">Año</button>
+          </div>
         </div>
       </div>
 
-      <!-- Días de la semana -->
-      <div class="calendar-grid" id="calendar-grid">
-        <div class="cal-weekday">Lun</div>
-        <div class="cal-weekday">Mar</div>
-        <div class="cal-weekday">Mié</div>
-        <div class="cal-weekday">Jue</div>
-        <div class="cal-weekday">Vie</div>
-        <div class="cal-weekday">Sáb</div>
-        <div class="cal-weekday">Dom</div>
+      <!-- ── Área principal del calendario ── -->
+      <div class="cal-layout" id="cal-layout">
 
-        <!-- Días del mes (RF17, RF18) -->
-        <div class="cal-day empty"></div>
-        <div class="cal-day">1</div>
-        <div class="cal-day">2</div>
-        <div class="cal-day">3</div>
-        <div class="cal-day">4</div>
-        <div class="cal-day">5</div>
-        <div class="cal-day">6</div>
-        <div class="cal-day">7</div>
-        <div class="cal-day">8</div>
-        <div class="cal-day">9</div>
-        <div class="cal-day">10</div>
-        <div class="cal-day">11</div>
-        <div class="cal-day">12</div>
-        <div class="cal-day">13</div>
-        <div class="cal-day">14</div>
-        <div class="cal-day today">15</div>
-        <div class="cal-day">16</div>
-        <div class="cal-day">17</div>
-        <div class="cal-day">18</div>
-        <div class="cal-day">19</div>
-        <div class="cal-day">20</div>
-        <div class="cal-day has-task">21<span class="cal-task-dot"></span></div>
-        <div class="cal-day">22</div>
-        <div class="cal-day has-task">23<span class="cal-task-dot"></span></div>
-        <div class="cal-day">24</div>
-        <div class="cal-day has-task">25<span class="cal-task-dot"></span></div>
-        <div class="cal-day">26</div>
-        <div class="cal-day">27</div>
-        <div class="cal-day has-task">28<span class="cal-task-dot"></span></div>
-        <div class="cal-day">29</div>
-        <div class="cal-day has-task deadline">30<span class="cal-task-dot"></span></div>
-      </div>
-
-      <!-- Tareas del día seleccionado -->
-      <div class="panel" id="calendar-day-tasks">
-        <div class="panel-header">
-          <h2 class="panel-title" id="calendar-selected-date">Tareas para el 15 de Abril</h2>
+        <!-- ─ Panel de tareas del día (SIEMPRE VISIBLE, izquierda) ── -->
+        <div class="cal-detail-panel" id="cal-detail-panel" aria-live="polite">
+          <div class="cal-detail-header">
+            <h3 class="cal-detail-title" id="cal-detail-title">Selecciona un día</h3>
+          </div>
+          <div class="cal-detail-body" id="cal-detail-body">
+            <p class="cal-detail-hint">Haz clic en un día del calendario para ver sus tareas.</p>
+          </div>
         </div>
-        <ul class="task-list" id="calendar-task-list">
-          <li class="task-list-item">
-            <span class="priority-dot priority-high"></span>
-            <span class="task-list-name">Diseñar mockups de pantallas principales</span>
-            <span class="task-list-status status-progress-chip">En Progreso</span>
-          </li>
-        </ul>
-        <p class="empty-state" id="calendar-empty" style="display:none">No hay tareas para este día.</p>
-      </div>
-    </section>
 
+        <!-- ─ Vistas del calendario (derecha, 80%) ── -->
+        <div class="cal-views-wrapper" id="cal-views-wrapper">
+
+        <!-- ─ Vista MENSUAL ─ -->
+        <div class="cal-view-panel active" id="cal-view-month">
+          <!-- Encabezado de días de la semana -->
+          <div class="cal-weekdays-row">
+            <span>Lun</span><span>Mar</span><span>Mié</span>
+            <span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+          </div>
+          <!-- Celdas dinámicas -->
+          <div class="cal-month-grid" id="cal-month-grid">
+            <!-- Renderizado por JS -->
+          </div>
+        </div>
+
+        <!-- ─ Vista ANUAL ─ -->
+        <div class="cal-view-panel" id="cal-view-year">
+          <div class="cal-year-grid" id="cal-year-grid">
+            <!-- 12 mini-calendarios renderizados por JS -->
+          </div>
+        </div>
+
+        <!-- ─ Vista DIARIA ─ -->
+        <div class="cal-view-panel" id="cal-view-day">
+          <div class="cal-day-view" id="cal-day-view">
+            <!-- Renderizado por JS -->
+          </div>
+        </div>
+
+        </div><!-- /cal-views-wrapper -->
+      </div><!-- /cal-layout -->
+</section>
     <!-- ═══════════════════════
          TAB: ESTADÍSTICAS (RF15, RF16)
     ════════════════════════════ -->
     <section class="tab-content" id="tab-stats">
 
-      <div class="stats-charts-grid">
+      <!-- Toolbar con filtro de proyecto -->
+      <div class="section-toolbar">
+        <div class="toolbar-left">
+          <select class="input-select" id="stats-project-filter" aria-label="Filtrar estadísticas por proyecto">
+            <option value="">Todos los proyectos</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn-secondary btn-sm" id="btn-stats-refresh" title="Actualizar gráficas">↻ Actualizar</button>
+        </div>
+      </div>
 
-        <!-- Gráfico de barras: tareas por estado -->
-        <div class="panel chart-panel" id="chart-tasks-by-status">
+      <!-- Tarjetas de resumen rápido -->
+      <div class="stats-summary-row" id="stats-summary-row">
+        <!-- Renderizado por stats.js -->
+      </div>
+
+      <!-- Fila superior: Barras de estado + Dona de prioridades -->
+      <div class="stats-charts-grid" id="stats-charts-grid">
+
+        <!-- Bar chart — tareas por estado (RF15) -->
+        <div class="panel chart-panel" id="chart-status">
           <div class="panel-header">
             <h2 class="panel-title">Tareas por Estado</h2>
+            <span class="chart-total" id="chart-status-total"></span>
           </div>
-          <div class="bar-chart" id="bar-chart-status" aria-label="Gráfico de barras tareas por estado">
-            <div class="bar-group">
-              <div class="bar-wrap">
-                <div class="bar" style="--h: 30%; --clr: #fc5c65" data-val="3"></div>
-              </div>
-              <span class="bar-label">Pendiente</span>
-            </div>
-            <div class="bar-group">
-              <div class="bar-wrap">
-                <div class="bar" style="--h: 20%; --clr: #f7b731" data-val="2"></div>
-              </div>
-              <span class="bar-label">En Progreso</span>
-            </div>
-            <div class="bar-group">
-              <div class="bar-wrap">
-                <div class="bar" style="--h: 70%; --clr: #20bf6b" data-val="7"></div>
-              </div>
-              <span class="bar-label">Terminado</span>
-            </div>
+          <div class="chart-body" id="chart-status-body">
+            <!-- SVG renderizado por stats.js -->
           </div>
         </div>
 
-        <!-- Gráfico de dona: prioridades -->
-        <div class="panel chart-panel" id="chart-tasks-by-priority">
+        <!-- Donut — tareas por prioridad (RF15) -->
+        <div class="panel chart-panel" id="chart-priority">
           <div class="panel-header">
-            <h2 class="panel-title">Tareas por Prioridad</h2>
+            <h2 class="panel-title">Distribución de Prioridad</h2>
           </div>
-          <div class="donut-wrap" id="donut-priority" aria-label="Gráfico de dona prioridad">
-            <svg viewBox="0 0 100 100" class="donut-svg">
-              <!-- Alta: 40% -->
-              <circle class="donut-ring" cx="50" cy="50" r="38" />
-              <circle class="donut-seg" cx="50" cy="50" r="38"
-                stroke="#fc5c65"
-                stroke-dasharray="95 144"
-                stroke-dashoffset="0" />
-              <!-- Media: 35% -->
-              <circle class="donut-seg" cx="50" cy="50" r="38"
-                stroke="#f7b731"
-                stroke-dasharray="83 156"
-                stroke-dashoffset="-95" />
-              <!-- Baja: 25% -->
-              <circle class="donut-seg" cx="50" cy="50" r="38"
-                stroke="#20bf6b"
-                stroke-dasharray="59 180"
-                stroke-dashoffset="-178" />
-            </svg>
-            <div class="donut-legend">
-              <span><span class="legend-dot" style="--c:#fc5c65"></span> Alta — 4</span>
-              <span><span class="legend-dot" style="--c:#f7b731"></span> Media — 3</span>
-              <span><span class="legend-dot" style="--c:#20bf6b"></span> Baja — 2</span>
-            </div>
+          <div class="chart-body" id="chart-priority-body">
+            <!-- SVG renderizado por stats.js -->
           </div>
         </div>
 
-        <!-- Progreso por proyecto (RF16) -->
-        <div class="panel chart-panel full-width" id="chart-project-progress">
+        <!-- Gauge radial — progreso global (RF16) -->
+        <div class="panel chart-panel" id="chart-global-gauge">
+          <div class="panel-header">
+            <h2 class="panel-title">Progreso Global</h2>
+          </div>
+          <div class="chart-body" id="chart-gauge-body">
+            <!-- SVG renderizado por stats.js -->
+          </div>
+        </div>
+
+        <!-- Barras horizontales — progreso por proyecto (RF16) — full width -->
+        <div class="panel chart-panel chart-full" id="chart-projects">
           <div class="panel-header">
             <h2 class="panel-title">Avance por Proyecto</h2>
+            <span class="chart-total" id="chart-projects-total"></span>
           </div>
-          <div class="project-progress-list" id="project-progress-list">
-            <div class="pp-row">
-              <span class="pp-name">App Móvil</span>
-              <div class="progress-bar-wrap pp-bar">
-                <div class="progress-bar" style="--pct: 70%; --bar-clr: #6c63ff"></div>
-              </div>
-              <span class="pp-pct">70%</span>
-            </div>
-            <div class="pp-row">
-              <span class="pp-name">Portafolio Web</span>
-              <div class="progress-bar-wrap pp-bar">
-                <div class="progress-bar" style="--pct: 45%; --bar-clr: #f7b731"></div>
-              </div>
-              <span class="pp-pct">45%</span>
-            </div>
-            <div class="pp-row">
-              <span class="pp-name">API REST</span>
-              <div class="progress-bar-wrap pp-bar">
-                <div class="progress-bar" style="--pct: 30%; --bar-clr: #20bf6b"></div>
-              </div>
-              <span class="pp-pct">30%</span>
-            </div>
+          <div class="chart-body" id="chart-projects-body">
+            <!-- Renderizado por stats.js -->
+          </div>
+        </div>
+
+        <!-- Barras horizontales — tareas por proyecto (conteo) — full width -->
+        <div class="panel chart-panel chart-full" id="chart-tasks-by-project">
+          <div class="panel-header">
+            <h2 class="panel-title">Tareas por Proyecto</h2>
+          </div>
+          <div class="chart-body" id="chart-tasks-project-body">
+            <!-- Renderizado por stats.js -->
+          </div>
+        </div>
+
+        <!-- Avance por miembro — solo visible para admins — full width -->
+        <div class="panel chart-panel chart-full" id="chart-members" style="display:none">
+          <div class="panel-header">
+            <h2 class="panel-title">Avance por Miembro</h2>
+            <span class="chart-total" id="chart-members-label"></span>
+          </div>
+          <div class="chart-body" id="chart-members-body">
+            <!-- Renderizado por stats.js -->
           </div>
         </div>
 
@@ -487,46 +485,85 @@
          TAB: USUARIOS (RF19, RF20)
     ════════════════════════════ -->
     <section class="tab-content" id="tab-users">
-      <div class="section-toolbar">
-        <div class="toolbar-left"></div>
-        <div class="toolbar-right">
-          <!-- RF19 -->
-          <button class="btn-primary" id="btn-new-user">+ Nuevo Usuario</button>
-        </div>
+
+      <!-- Perfil activo -->
+      <div class="active-user-banner" id="active-user-banner">
+        <!-- Renderizado por users.js -->
       </div>
 
-      <div class="users-grid" id="users-grid">
-
-        <div class="user-card" data-user-id="1">
-          <div class="user-card-avatar">JD</div>
-          <div class="user-card-info">
-            <h3 class="user-card-name" id="user-name-1">Juan Díaz</h3>
-            <span class="user-card-tasks">5 tareas asignadas</span>
-          </div>
-          <div class="user-card-actions">
-            <button class="btn-icon btn-edit-user" aria-label="Editar usuario">✎</button>
-            <button class="btn-icon btn-delete-user" aria-label="Eliminar usuario">✕</button>
-          </div>
-        </div>
-
-        <div class="user-card" data-user-id="2">
-          <div class="user-card-avatar" style="--av-clr: #20bf6b">MR</div>
-          <div class="user-card-info">
-            <h3 class="user-card-name" id="user-name-2">María Ramírez</h3>
-            <span class="user-card-tasks">2 tareas asignadas</span>
-          </div>
-          <div class="user-card-actions">
-            <button class="btn-icon btn-edit-user" aria-label="Editar usuario">✎</button>
-            <button class="btn-icon btn-delete-user" aria-label="Eliminar usuario">✕</button>
-          </div>
-        </div>
-
-        <button class="user-card user-card-new" id="btn-add-user-card">
-          <span class="new-card-icon">+</span>
-          <span class="new-card-label">Agregar Usuario</span>
+      <!-- Toolbar con pestañas internas -->
+      <div class="users-inner-tabs" id="users-inner-tabs">
+        <button class="users-tab-btn active" data-utab="directory">
+          👥 Directorio
         </button>
-
+        <button class="users-tab-btn" data-utab="my-tasks">
+          ✓ Mis Tareas
+        </button>
+        <button class="users-tab-btn" data-utab="all-tasks">
+          📋 Todas las Tareas
+        </button>
+        <div class="users-tab-spacer"></div>
+        <button class="btn-primary btn-sm" id="btn-new-user">+ Nuevo Usuario</button>
       </div>
+
+      <!-- Sub-panel: DIRECTORIO -->
+      <div class="users-panel active" id="upanel-directory">
+        <div class="users-search-row">
+          <input type="search" class="input-search" id="search-users"
+                 placeholder="Buscar usuarios…" autocomplete="off" />
+        </div>
+        <div class="users-grid" id="users-grid">
+          <!-- Renderizado por users.js -->
+        </div>
+      </div>
+
+      <!-- Sub-panel: MIS TAREAS -->
+      <div class="users-panel" id="upanel-my-tasks">
+        <div class="my-tasks-header" id="my-tasks-header">
+          <!-- Renderizado por users.js -->
+        </div>
+        <!-- Filtros -->
+        <div class="my-tasks-filters">
+          <select class="input-select" id="mytasks-status-filter" style="width:auto">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en-progreso">En Progreso</option>
+            <option value="terminado">Terminado</option>
+          </select>
+          <select class="input-select" id="mytasks-priority-filter" style="width:auto">
+            <option value="">Todas las prioridades</option>
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+        <div class="my-tasks-list" id="my-tasks-list">
+          <!-- Renderizado por users.js -->
+        </div>
+      </div>
+
+      <!-- Sub-panel: TODAS LAS TAREAS -->
+      <div class="users-panel" id="upanel-all-tasks">
+        <!-- Filtros de todas las tareas -->
+        <div class="my-tasks-filters">
+          <select class="input-select" id="alltasks-project-filter" style="width:auto">
+            <option value="">Todos los proyectos</option>
+          </select>
+          <select class="input-select" id="alltasks-status-filter" style="width:auto">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en-progreso">En Progreso</option>
+            <option value="terminado">Terminado</option>
+          </select>
+          <select class="input-select" id="alltasks-user-filter" style="width:auto">
+            <option value="">Todos los miembros</option>
+          </select>
+        </div>
+        <div class="all-tasks-list" id="all-tasks-list">
+          <!-- Renderizado por users.js -->
+        </div>
+      </div>
+
     </section>
 
     <!-- ═══════════════════════
@@ -730,6 +767,14 @@
         <span class="field-error" id="error-task-project"></span>
       </div>
 
+      <!-- Asignado a (RF20) — poblado según miembros del proyecto -->
+      <div class="form-group">
+        <label class="form-label" for="task-assignee">Asignar a</label>
+        <select id="task-assignee" class="input-select">
+          <option value="">— Sin asignar —</option>
+        </select>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" id="btn-cancel-task">Cancelar</button>
@@ -737,7 +782,7 @@
     </div>
   </dialog>
 
-  <!-- Modal: Crear Usuario (RF19) -->
+  <!-- Modal: Crear / Editar Usuario (RF19) -->
   <dialog class="modal modal-sm" id="modal-user" aria-modal="true" aria-labelledby="modal-user-title">
     <div class="modal-header">
       <h2 class="modal-title" id="modal-user-title">Nuevo Usuario</h2>
@@ -745,14 +790,81 @@
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label" for="user-name">Nombre <span class="required">*</span></label>
-        <input type="text" id="user-name" class="input-text" placeholder="Nombre completo" maxlength="60" required />
+        <label class="form-label" for="user-name-input">
+          Nombre completo <span class="required">*</span>
+        </label>
+        <input type="text" id="user-name-input" class="input-text"
+               placeholder="Ej. María Ramírez" maxlength="60" required />
         <span class="field-error" id="error-user-name"></span>
+      </div>
+      <!-- Vista previa de avatar -->
+      <div class="user-avatar-preview-row">
+        <div class="user-avatar-preview" id="user-avatar-preview">MR</div>
+        <span style="font-size:.78rem;color:var(--text-muted)">Iniciales generadas automáticamente</span>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" id="btn-cancel-user">Cancelar</button>
-      <button class="btn-primary" id="btn-save-user">Crear Usuario</button>
+      <button class="btn-primary"   id="btn-save-user">Crear Usuario</button>
+    </div>
+  </dialog>
+
+  <!-- Modal: Cambiar usuario activo (switcher) -->
+  <dialog class="modal modal-sm" id="modal-switch-user" aria-modal="true" aria-labelledby="modal-switch-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-switch-title">¿Quién eres?</h2>
+      <button class="btn-icon modal-close" id="close-modal-switch" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body" style="padding-top:8px">
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">
+        Selecciona tu perfil para ver tus tareas asignadas.
+      </p>
+      <div class="switch-user-list" id="switch-user-list">
+        <!-- Renderizado por users.js -->
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Modal: Gestionar miembros de proyecto (RF20) -->
+  <dialog class="modal" id="modal-members" aria-modal="true" aria-labelledby="modal-members-title">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-members-title">Gestionar Miembros</h2>
+      <button class="btn-icon modal-close" id="close-modal-members" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="members-project-label" id="members-project-label"></p>
+
+      <!-- Lista de miembros actuales -->
+      <div class="members-current" id="members-current">
+        <!-- Renderizado por users.js -->
+      </div>
+
+      <!-- Agregar miembro -->
+      <div class="members-add-section">
+        <h3 class="members-add-title">Agregar miembro</h3>
+        <div class="form-row">
+          <div class="form-group half">
+            <label class="form-label" for="member-select">Usuario</label>
+            <select id="member-select" class="input-select">
+              <option value="">— Seleccionar —</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label class="form-label" for="member-role-select">Rol en el proyecto</label>
+            <select id="member-role-select" class="input-select">
+              <option value="member">👤 Usuario Normal</option>
+              <option value="admin">🔑 Administrador</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary btn-sm" id="btn-add-member" style="margin-top:4px">
+          Agregar al Proyecto
+        </button>
+        <span class="field-error" id="error-add-member" style="display:block;margin-top:4px"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="btn-close-members">Cerrar</button>
     </div>
   </dialog>
 
@@ -772,5 +884,10 @@
 
   <script src="app.js"></script>
   <script src="tasks.js"></script>
+  <script src="calendar.js"></script>
+  <script src="dashboard.js"></script>
+  <script src="stats.js"></script>
+  <script src="users.js"></script>
+  <script src="fixes.js"></script>
 </body>
 </html>
