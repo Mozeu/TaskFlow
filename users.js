@@ -188,6 +188,8 @@ const UserManager = {
 
   // 👇 REFRESCAR TODA LA INTERFAZ SIN RECARGAR
   refreshAllAfterUserChange();
+ 
+  document.dispatchEvent(new CustomEvent('userChanged'));
 },
   /* ─── MEMBRESÍAS ─── */
 
@@ -894,56 +896,66 @@ const ModalMembers = {
   },
 
   refresh() {
-    const projectId = UsersState.membersProjectId;
-    if (!projectId) return;
+  const projectId = UsersState.membersProjectId;
+  if (!projectId) return;
 
-    const project     = State.projects.find(p => p.id === projectId);
-    const membersSel  = document.getElementById('member-select');
-    const currentEl   = document.getElementById('members-current');
-    const projectLbl  = document.getElementById('members-project-label');
+  const project = State.projects.find(p => p.id === projectId);
+  const currentUser = UserManager.getActive();
+  const isAdmin = currentUser && (project?.creatorId === currentUser.id ||
+    UsersState.memberships.some(m => m.projectId === projectId && m.userId === currentUser.id && m.role === 'admin'));
 
-    if (projectLbl && project)
-      projectLbl.textContent = `Gestiona quién tiene acceso al proyecto "${project.name}".`;
+  const membersSel = document.getElementById('member-select');
+  const currentEl = document.getElementById('members-current');
+  const projectLbl = document.getElementById('members-project-label');
+  const addSection = document.querySelector('.members-add-section'); // la sección para agregar
 
-    /* Miembros actuales */
-    const members = UsersState.memberships.filter(m => m.projectId === projectId);
-    /* Incluir creador si no está en membresías */
-    const allMemberIds = [...new Set([
-      ...(project?.creatorId ? [project.creatorId] : []),
-      ...members.map(m => m.userId)
-    ])];
+  if (projectLbl && project)
+    projectLbl.textContent = `Gestiona quién tiene acceso al proyecto "${project.name}".`;
 
-    if (currentEl) {
-      if (allMemberIds.length === 0) {
-        currentEl.innerHTML = `<p style="color:var(--text-muted);font-size:.82rem">Sin miembros aún.</p>`;
-      } else {
-        currentEl.innerHTML = allMemberIds.map(uid => {
-          const u    = UserManager.getById(uid);
-          if (!u) return '';
-          const isCreator = project?.creatorId === uid;
-          const memEntry  = members.find(m => m.userId === uid);
-          const role      = isCreator ? 'admin' : (memEntry?.role || 'member');
-          const roleLabel = role === 'admin' ? '🔑 Admin' : '👤 Miembro';
-          const cls       = role === 'admin' ? 'admin' : 'member';
-          const canRemove = !isCreator;
-          const canToggle = !isCreator;
+  // Ocultar/mostrar sección de agregar según permiso
+  if (addSection) addSection.style.display = isAdmin ? 'block' : 'none';
 
-          return `
-            <div class="member-row">
-              <div class="member-row-avatar" style="background:${esc(u.color)}">${esc(u.initials)}</div>
-              <span class="member-row-name">${esc(u.name)}${isCreator ? ' <em style="font-size:.68rem;color:var(--text-muted)">(creador)</em>' : ''}</span>
-              <span class="member-row-role ${cls}">${roleLabel}</span>
-              <div class="member-row-actions">
-                ${canToggle ? `<button class="btn-icon btn-toggle-role" data-uid="${esc(uid)}"
-                  title="${role === 'admin' ? 'Cambiar a miembro' : 'Promover a admin'}"
-                  style="color:var(--text-muted)">⇅</button>` : ''}
-                ${canRemove ? `<button class="btn-icon btn-remove-member" data-uid="${esc(uid)}"
-                  aria-label="Quitar del proyecto" style="color:var(--danger)">✕</button>` : ''}
-              </div>
-            </div>`;
-        }).join('');
+  /* Miembros actuales */
+  const members = UsersState.memberships.filter(m => m.projectId === projectId);
+  const allMemberIds = [...new Set([
+    ...(project?.creatorId ? [project.creatorId] : []),
+    ...members.map(m => m.userId)
+  ])];
 
-        /* Bind toggle/remove */
+  if (currentEl) {
+    if (allMemberIds.length === 0) {
+      currentEl.innerHTML = `<p style="color:var(--text-muted);font-size:.82rem">Sin miembros aún.</p>`;
+    } else {
+      currentEl.innerHTML = allMemberIds.map(uid => {
+        const u = UserManager.getById(uid);
+        if (!u) return '';
+        const isCreator = project?.creatorId === uid;
+        const memEntry = members.find(m => m.userId === uid);
+        const role = isCreator ? 'admin' : (memEntry?.role || 'member');
+        const roleLabel = role === 'admin' ? '🔑 Admin' : '👤 Miembro';
+        const cls = role === 'admin' ? 'admin' : 'member';
+
+        // Solo mostrar botones si el usuario activo es admin
+        const canToggle = isAdmin && !isCreator;
+        const canRemove = isAdmin && !isCreator;
+
+        return `
+          <div class="member-row">
+            <div class="member-row-avatar" style="background:${esc(u.color)}">${esc(u.initials)}</div>
+            <span class="member-row-name">${esc(u.name)}${isCreator ? ' <em style="font-size:.68rem;color:var(--text-muted)">(creador)</em>' : ''}</span>
+            <span class="member-row-role ${cls}">${roleLabel}</span>
+            <div class="member-row-actions">
+              ${canToggle ? `<button class="btn-icon btn-toggle-role" data-uid="${esc(uid)}"
+                title="${role === 'admin' ? 'Cambiar a miembro' : 'Promover a admin'}"
+                style="color:var(--text-muted)">⇅</button>` : ''}
+              ${canRemove ? `<button class="btn-icon btn-remove-member" data-uid="${esc(uid)}"
+                aria-label="Quitar del proyecto" style="color:var(--danger)">✕</button>` : ''}
+            </div>
+          </div>`;
+      }).join('');
+
+      // Bind de eventos solo si es admin (aunque los botones no existan para no-admins, evita errores)
+      if (isAdmin) {
         currentEl.querySelectorAll('.btn-toggle-role').forEach(btn => {
           btn.addEventListener('click', () => {
             const memEntry = UsersState.memberships.find(
@@ -960,14 +972,18 @@ const ModalMembers = {
         });
       }
     }
+  }
 
-    /* Populate select de nuevos miembros (excluir ya miembros) */
-    if (membersSel) {
-      const nonMembers = UsersState.users.filter(u => !allMemberIds.includes(u.id));
-      membersSel.innerHTML = '<option value="">— Seleccionar —</option>' +
-        nonMembers.map(u => `<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
-    }
-  },
+  /* Populate select de nuevos miembros (solo si es admin, pero el select ya está oculto si no) */
+  if (membersSel && isAdmin) {
+    const nonMembers = UsersState.users.filter(u => !allMemberIds.includes(u.id));
+    membersSel.innerHTML = '<option value="">— Seleccionar —</option>' +
+      nonMembers.map(u => `<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('');
+  } else if (membersSel && !isAdmin) {
+    membersSel.innerHTML = '<option value="">— Sin permisos —</option>';
+    membersSel.disabled = true;
+  }
+},
 };
 
 /* ─────────────────────────────────────────────
@@ -1098,9 +1114,12 @@ function _patchTaskModal() {
    12. PATCH — Kanban: botón "Gestionar Miembros" en toolbar
 ───────────────────────────────────────────── */
 function _injectMembersButton() {
-  /* Agregar botón junto al selector de proyecto en el kanban */
   const kanbanRight = document.querySelector('#tab-kanban .toolbar-right');
   if (!kanbanRight) return;
+
+  // Evitar duplicados
+  if (document.getElementById('btn-manage-members')) return;
+
   const btn = document.createElement('button');
   btn.className   = 'btn-secondary btn-sm';
   btn.id          = 'btn-manage-members';
@@ -1113,14 +1132,23 @@ function _injectMembersButton() {
     if (projectId) ModalMembers.open(projectId);
   });
 
-  /* Habilitar cuando hay proyecto seleccionado */
-  document.getElementById('kanban-project-selector')?.addEventListener('change', () => {
+  // Función para actualizar estado del botón según proyecto seleccionado y permisos
+  function updateMembersButton() {
     const projectId = document.getElementById('kanban-project-selector')?.value;
-    btn.disabled    = !projectId;
-    /* También update assignees en task modal */
-    const assigneeSel = document.getElementById('task-assignee');
-    UserManager._populateAssigneeSelect(assigneeSel, projectId);
-  });
+    if (!projectId) {
+      btn.disabled = true;
+      btn.style.display = 'none'; // ocultar si no hay proyecto
+      return;
+    }
+    const isAdmin = UserManager.isActiveAdmin(projectId);
+    btn.disabled = !isAdmin;
+    btn.style.display = isAdmin ? 'inline-flex' : 'none';
+  }
+
+  document.getElementById('kanban-project-selector')?.addEventListener('change', updateMembersButton);
+  // También escuchar cambios de usuario activo (por si cambia el perfil)
+  document.addEventListener('userChanged', updateMembersButton); // si existe ese evento, sino llamar desde setActive
+  updateMembersButton();
 }
 
 /* ─────────────────────────────────────────────
