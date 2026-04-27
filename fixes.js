@@ -644,3 +644,12 @@ function _userProjects() {
 })();
 
 console.log('[TaskFlow] fixes.js v3.0 — 11 correcciones activas');
+
+if (UserManager.isActiveAdmin(projectId)) {
+                  const select = document.getElementById('member-role-select');
+                  const option = document.createElement('option');
+                  option.value = 'admin';
+                  option.textContent = '🔑 Administrador';
+                  select.appendChild(option);
+                  console.log('Es administrador, opción agregada');
+                }

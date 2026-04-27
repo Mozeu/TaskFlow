@@ -853,16 +853,7 @@
             <label class="form-label" for="member-role-select">Rol en el proyecto</label>
             <select id="member-role-select" class="input-select">
               <option value="member">👤 Usuario Normal</option>
-              <script>
-                if (UserManager.isActiveAdmin(projectId)) {
-                  const select = document.getElementById('member-role-select');
-                  const option = document.createElement('option');
-                  option.value = 'admin';
-                  option.textContent = '🔑 Administrador';
-                  select.appendChild(option);
-                  console.log('Es administrador, opción agregada');
-                }
-              </script>
+              
             </select>
           </div>
         </div>
