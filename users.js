@@ -230,13 +230,16 @@ const UserManager = {
   },
 
   /** Cambiar rol de miembro */
+  
   changeRole(projectId, userId, newRole) {
-    const idx = UsersState.memberships.findIndex(
-      m => m.projectId === projectId && m.userId === userId
-    );
-    if (idx === -1) return;
-    UsersState.memberships[idx].role = newRole;
-    UsersStorage.saveMembers(UsersState.memberships);
+    if(this.isActiveAdmin()){
+      const idx = UsersState.memberships.findIndex(
+        m => m.projectId === projectId && m.userId === userId
+      );
+      if (idx === -1) return;
+      UsersState.memberships[idx].role = newRole;
+      UsersStorage.saveMembers(UsersState.memberships);
+    }
   },
 
   /** Quitar miembro de proyecto */
