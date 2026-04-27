@@ -214,7 +214,6 @@ const UserManager = {
     return this.getRoleIn(active.id, projectId) === 'admin';
   },
 
-  
   /** Agregar miembro a proyecto (RF20) */
   addMember(projectId, userId, role = 'member') {
     /* Evitar duplicado */
