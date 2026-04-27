@@ -214,6 +214,7 @@ const UserManager = {
     return this.getRoleIn(active.id, projectId) === 'admin';
   },
 
+  
   /** Agregar miembro a proyecto (RF20) */
   addMember(projectId, userId, role = 'member') {
     /* Evitar duplicado */
@@ -230,16 +231,13 @@ const UserManager = {
   },
 
   /** Cambiar rol de miembro */
-  
   changeRole(projectId, userId, newRole) {
-    if(this.isActiveAdmin()){
-      const idx = UsersState.memberships.findIndex(
-        m => m.projectId === projectId && m.userId === userId
-      );
-      if (idx === -1) return;
-      UsersState.memberships[idx].role = newRole;
-      UsersStorage.saveMembers(UsersState.memberships);
-    }
+    const idx = UsersState.memberships.findIndex(
+      m => m.projectId === projectId && m.userId === userId
+    );
+    if (idx === -1) return;
+    UsersState.memberships[idx].role = newRole;
+    UsersStorage.saveMembers(UsersState.memberships);
   },
 
   /** Quitar miembro de proyecto */
