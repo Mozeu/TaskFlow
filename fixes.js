@@ -464,8 +464,8 @@ function _userProjects() {
     _ctxPid = projectId || null;
     _updateRole();
   };
-
-  function _updateRole() {
+  if(UserManager.isActiveAdmin(projectId)){
+    function _updateRole() {
     const roleEl   = document.getElementById('current-user-role');
     if (!roleEl) return;
     const activeId = UsersState.activeUserId;
@@ -477,6 +477,8 @@ function _userProjects() {
       UsersState.memberships.some(m => m.projectId === _ctxPid && m.userId === activeId);
     roleEl.textContent = !isMember ? '' : isAdmin ? '🔑 Admin' : '👤 Miembro';
   }
+  }
+  
 
   const origUpdate = UsersSidebar.update.bind(UsersSidebar);
   UsersSidebar.update = function() {
@@ -646,10 +648,10 @@ function _userProjects() {
 console.log('[TaskFlow] fixes.js v3.0 — 11 correcciones activas');
 
 if (UserManager.isActiveAdmin(projectId)) {
-                  const select = document.getElementById('member-role-select');
-                  const option = document.createElement('option');
-                  option.value = 'admin';
-                  option.textContent = '🔑 Administrador';
-                  select.appendChild(option);
-                  console.log('Es administrador, opción agregada');
-                }
+  const select = document.getElementById('member-role-select');
+  const option = document.createElement('option');
+  option.value = 'admin';
+  option.textContent = '🔑 Administrador';
+  select.appendChild(option);
+  console.log('Es administrador, opción agregada');
+}
