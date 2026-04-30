@@ -430,6 +430,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Init workspace selector */
   WorkspaceSelector.init();
+    /* ─── NUEVO: Botón para exportar progreso global en el dashboard ─── */
+  const exportProgressBtn = document.createElement('button');
+  exportProgressBtn.className = 'btn-secondary btn-sm';
+  exportProgressBtn.textContent = '📊 Exportar progreso';
+  exportProgressBtn.addEventListener('click', () => DataManager.exportGlobalProgress());
+  // Buscar el contenedor donde insertarlo: justo después del contexto del proyecto
+  const contextDiv = document.querySelector('.db-topbar .db-project-context');
+  if (contextDiv && contextDiv.parentNode) {
+    // Inserta después del elemento .db-project-context
+    contextDiv.parentNode.insertBefore(exportProgressBtn, contextDiv.nextSibling);
+  } else {
+    // Fallback: al final del .db-topbar
+    document.querySelector('.db-topbar')?.appendChild(exportProgressBtn);
+  }
 
   /* Patch TabManager: al cambiar de pestaña, sincronizar workspace */
   const _origSwitch = TabManager.switchTo.bind(TabManager);

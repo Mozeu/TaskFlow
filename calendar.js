@@ -539,7 +539,7 @@ const CalendarModule = {
       this.render();
     });
 
-    /* Cierre del panel de detalle — FIX: solo limpia selección, no oculta panel */
+    /* Cierre del panel de detalle */
     document.getElementById('btn-cal-detail-close')?.addEventListener('click', () => {
       DetailPanel.close();
     });
@@ -552,6 +552,15 @@ const CalendarModule = {
     /* Filtro de proyecto */
     CalFilter.init();
 
+    /* ─── NUEVO: Botón para exportar calendario ─── */
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'btn-secondary btn-sm';
+    exportBtn.textContent = '📅 Exportar Calendario';
+    exportBtn.addEventListener('click', () => DataManager.exportCalendar());
+    // Inserta el botón en el toolbar derecho del calendario
+    const toolbarRight = document.querySelector('#tab-calendar .cal-toolbar .toolbar-right');
+    if (toolbarRight) toolbarRight.appendChild(exportBtn);
+
     /* Patch de TabManager: al entrar al calendario, actualizar */
     const origSwitch = TabManager.switchTo.bind(TabManager);
     TabManager.switchTo = function(tabId) {
@@ -559,7 +568,7 @@ const CalendarModule = {
       if (tabId === 'calendar') CalendarModule.onEnter();
     };
 
-    /* Patch de Renderer: al guardar tareas/proyectos, re-renderizar si estamos en calendario */
+    /* Patch de Renderer: ... */
     const origRender = Renderer.renderAll.bind(Renderer);
     Renderer.renderAll = function() {
       origRender();

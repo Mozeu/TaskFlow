@@ -564,6 +564,7 @@ const Renderer = {
           </div>
         </div>
         <div class="project-card-footer">
+        <button class="btn-icon btn-export-project" data-id="${esc(p.id)}" title="Exportar proyecto">⬇️</button>
           <button class="btn-secondary btn-sm btn-view-kanban" data-id="${esc(p.id)}">Ver Kanban</button>
           <button class="btn-secondary btn-sm btn-view-tasks"  data-id="${esc(p.id)}">Ver Tareas</button>
         </div>
@@ -586,6 +587,12 @@ const Renderer = {
 
   /* Bind eventos en tarjetas del DOM */
   bindCardEvents(container) {
+    container.querySelectorAll('.btn-export-project').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    DataManager.exportProjectTasks(btn.dataset.id);
+  });
+});
     container.querySelectorAll('.btn-edit-project').forEach(btn => {
       btn.addEventListener('click', e => {
         e.stopPropagation();
@@ -834,4 +841,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Tab inicial */
   TabManager.switchTo('dashboard');
+  // Dentro de document.addEventListener('DOMContentLoaded', () => { ... })
+
+// Botón "Borrar Todo" (RF23) - DELEGAR A DataManager
+document.getElementById('btn-clear-data')?.addEventListener('click', () => {
+  DataManager.clearAllData();
+});
+
+// Botón "Exportar JSON" (global) - exportar progreso global (o se puede elegir)
+document.getElementById('btn-export-json')?.addEventListener('click', () => {
+  // Preguntar qué exportar: calendario, progreso global o proyecto específico
+  const option = prompt('¿Qué deseas exportar?\n1. Calendario (tareas con fecha)\n2. Progreso global\n3. Proyecto específico (ingresa ID)');
+  if (option === '1') DataManager.exportCalendar();
+  else if (option === '2') DataManager.exportGlobalProgress();
+  else if (option === '3') {
+    const projectId = prompt('ID del proyecto (puedes verlo en la URL o en consola)');
+    if (projectId) DataManager.exportProjectTasks(projectId);
+  }
+});
+
+// Botón "Importar JSON" - permitir importar proyecto o tarea
+document.getElementById('input-import-json')?.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const type = confirm('¿Es un archivo de proyecto? (Aceptar = Proyecto, Cancelar = Tarea)');
+  if (type) {
+    DataManager.importProjectFromJSON(file);
+  } else {
+    DataManager.importTaskFromJSON(file);
+  }
+  e.target.value = ''; // limpiar input
+});
 });
