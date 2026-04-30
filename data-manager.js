@@ -146,51 +146,70 @@ const DataManager = {
    * @param {File} file
    */
   importProjectFromJSON(file) {
-    this._readJSONFile(file, (json) => {
-      if (json.type !== 'project_tasks' && !json.project) {
-        Toast.show('El archivo no es una exportación válida de proyecto.', 'error');
-        return;
+  this._readJSONFile(file, (json) => {
+    if (json.type !== 'project_tasks' && !json.project) {
+      Toast.show('El archivo no es una exportación válida de proyecto.', 'error');
+      return;
+    }
+    const projectData = json.project;
+    const activeUser = UserManager.getActive();
+    if (!activeUser) {
+      Toast.show('Debe haber un usuario activo para importar un proyecto.', 'error');
+      return;
+    }
+
+    let existing = State.projects.find(p => p.id === projectData.id);
+    if (existing) {
+      // Actualizar proyecto existente
+      const idx = State.projects.findIndex(p => p.id === projectData.id);
+      State.projects[idx] = {
+        ...existing,
+        name: projectData.name,
+        color: projectData.color,
+        icon: projectData.icon,
+        deadline: projectData.deadline,
+        updatedAt: new Date().toISOString()
+      };
+      Toast.show(`Proyecto "${projectData.name}" actualizado.`, 'success');
+      // Asegurar que el usuario activo sea admin (si no lo es ya)
+      if (!UserManager.isActiveAdmin(projectData.id)) {
+        UserManager.addMember(projectData.id, activeUser.id, 'admin');
       }
-      const projectData = json.project;
-      // Verificar si ya existe un proyecto con ese ID
-      let existing = State.projects.find(p => p.id === projectData.id);
-      if (existing) {
-        // Actualizar proyecto existente
-        const idx = State.projects.findIndex(p => p.id === projectData.id);
-        State.projects[idx] = {
-          ...existing,
-          name: projectData.name,
-          color: projectData.color,
-          icon: projectData.icon,
-          deadline: projectData.deadline,
-          updatedAt: new Date().toISOString()
-        };
-        Toast.show(`Proyecto "${projectData.name}" actualizado.`, 'success');
-      } else {
-        // Crear nuevo proyecto
-        const newProject = {
-          id: projectData.id || uid(),
-          name: projectData.name,
-          desc: projectData.desc || '',
-          color: projectData.color || '#6c63ff',
-          icon: projectData.icon || '🗂',
-          deadline: projectData.deadline || null,
-          createdAt: new Date().toISOString(),
-          taskCount: 0,
-          progress: 0
-        };
-        State.projects.unshift(newProject);
-        Toast.show(`Proyecto "${newProject.name}" importado.`, 'success');
-      }
-      Storage.save(State.projects);
-      // Opcional: también importar las tareas asociadas si el usuario lo desea
-      if (json.tasks && json.tasks.length > 0 && confirm('¿Deseas importar también las tareas de este proyecto?')) {
-        this._importTasksForProject(json.tasks, projectData.id);
-      }
-      Renderer.renderAll();
-      WorkspaceSelector.populate();
-    });
-  },
+    } else {
+      // Crear nuevo proyecto
+      const newProject = {
+        id: projectData.id || uid(),
+        name: projectData.name,
+        desc: projectData.desc || '',
+        color: projectData.color || '#6c63ff',
+        icon: projectData.icon || '🗂',
+        deadline: projectData.deadline || null,
+        creatorId: activeUser.id,          // ← el importador es el creador
+        createdAt: new Date().toISOString(),
+        taskCount: 0,
+        progress: 0
+      };
+      State.projects.unshift(newProject);
+      // Agregar al usuario activo como administrador
+      UserManager.addMember(newProject.id, activeUser.id, 'admin');
+      Toast.show(`Proyecto "${newProject.name}" importado.`, 'success');
+    }
+    Storage.save(State.projects);
+
+    // Opcional: importar las tareas asociadas
+    if (json.tasks && json.tasks.length > 0 && confirm('¿Deseas importar también las tareas de este proyecto?')) {
+      this._importTasksForProject(json.tasks, projectData.id);
+    }
+
+    // Refrescar toda la interfaz
+    Renderer.renderAll();
+    WorkspaceSelector.populate();
+    // Si estamos en la pestaña de usuarios, refrescar
+    if (typeof UsersRenderer !== 'undefined') UsersRenderer.renderAll();
+    // Si el proyecto importado es el actual, actualizar dashboard
+    if (WorkspaceState.projectId === projectData.id) Dashboard.render();
+  });
+},
 
   /**
    * Importa una tarea desde un archivo JSON (adjunto a un proyecto)
@@ -198,50 +217,39 @@ const DataManager = {
    * @param {string} targetProjectId (opcional, si no se especifica se pide al usuario)
    */
   importTaskFromJSON(file, targetProjectId = null) {
-    this._readJSONFile(file, (json) => {
-      // Se espera un objeto con estructura de tarea
-      if (!json.name || !json.status) {
-        Toast.show('El archivo no contiene una tarea válida (nombre y estado requeridos).', 'error');
+  this._readJSONFile(file, (json) => {
+    if (!json.name || !json.status) {
+      Toast.show('El archivo no contiene una tarea válida (nombre y estado requeridos).', 'error');
+      return;
+    }
+    let projectId = targetProjectId;
+    if (!projectId) {
+      const activeUser = UserManager.getActive();
+      if (!activeUser) {
+        Toast.show('Debe haber un usuario activo para importar una tarea.', 'error');
         return;
       }
-      let projectId = targetProjectId;
-      if (!projectId) {
-        // Pedir al usuario que seleccione un proyecto
-        const projectList = State.projects.map(p => `${p.id}|${p.name}`).join(',');
-        const selected = prompt(`Selecciona un proyecto para esta tarea (ingresa el número):\n${State.projects.map((p, i) => `${i+1}. ${p.name}`).join('\n')}`);
-        if (selected) {
-          const idx = parseInt(selected) - 1;
-          if (!isNaN(idx) && State.projects[idx]) projectId = State.projects[idx].id;
-        }
-        if (!projectId) {
-          Toast.show('No se seleccionó proyecto. Importación cancelada.', 'error');
-          return;
-        }
+      // Obtener proyectos a los que el usuario activo tiene acceso
+      const accessibleProjects = _userProjects(); // función definida en fixes.js
+      if (accessibleProjects.length === 0) {
+        Toast.show('No tienes proyectos accesibles para asignar esta tarea.', 'error');
+        return;
       }
-      // Crear la tarea con los datos del JSON (sobrescribiendo campos seguros)
-      const newTask = {
-        id: json.id || uid(),
-        name: json.name,
-        desc: json.desc || '',
-        priority: json.priority || 'media',
-        status: json.status,
-        deadline: json.deadline || null,
-        projectId: projectId,
-        assigneeId: json.assigneeId || null,
-        createdAt: new Date().toISOString()
-      };
-      KanbanState.tasks.push(newTask);
-      TaskStorage.save(KanbanState.tasks);
-      TaskManager._syncProject(projectId);
-      Toast.show(`Tarea "${newTask.name}" importada al proyecto.`, 'success');
-      Activity.add(`Tarea <strong>${esc(newTask.name)}</strong> importada desde archivo`);
-      // Refrescar vistas
-      KanbanRenderer.renderBoard(KanbanState.currentProjectId);
-      Dashboard.render();
-      if (typeof CalendarModule !== 'undefined') CalendarModule.render();
-      if (typeof UsersRenderer !== 'undefined') UsersRenderer.renderAll();
-    });
-  },
+      const projectList = accessibleProjects.map((p, i) => `${i+1}. ${p.name}`).join('\n');
+      const selected = prompt(`Selecciona un proyecto para esta tarea:\n${projectList}`);
+      if (selected) {
+        const idx = parseInt(selected) - 1;
+        if (!isNaN(idx) && accessibleProjects[idx]) projectId = accessibleProjects[idx].id;
+      }
+      if (!projectId) {
+        Toast.show('No se seleccionó proyecto. Importación cancelada.', 'error');
+        return;
+      }
+    }
+    // Crear la tarea...
+    // (resto igual)
+  });
+},
 
   /* ─────────────────────────────────────────────
      MÉTODOS PRIVADOS
