@@ -604,6 +604,7 @@ function _userProjects() {
     }
     .proj-members-avatars { display: flex; align-items: center; gap: -4px; flex-wrap: wrap; gap: 3px; }
     .proj-member-avatar {
+      margin-left: 10px;
       width: 26px; height: 26px; border-radius: 50%;
       display: inline-flex; align-items: center; justify-content: center;
       font-family: 'Sora', sans-serif; font-size: .58rem; font-weight: 800;
