@@ -14,7 +14,7 @@ const DataManager = {
   ───────────────────────────────────────────── */
   clearAllData() {
     // Confirmación antes de borrar
-    if (!confirm('⚠️ Esta acción ELIMINARÁ TODOS los proyectos, tareas, usuarios y configuraciones. ¿Estás seguro?')) return false;
+    if (!confirm('Esta acción ELIMINARÁ TODOS los proyectos, tareas, usuarios y configuraciones. ¿Estás seguro?')) return false;
 
     // Limpiar localStorage
     localStorage.removeItem('taskflow_projects');
@@ -26,7 +26,7 @@ const DataManager = {
     localStorage.removeItem('taskflow_theme');
     localStorage.removeItem('taskflow_activity');
     localStorage.removeItem('taskflow_custom_cols');
-
+    updateStorageUsed();
     // Recargar la página para reiniciar el estado
     Toast.show('Todos los datos han sido eliminados. La página se recargará.', 'success', 2000);
     setTimeout(() => location.reload(), 1500);
@@ -195,6 +195,7 @@ const DataManager = {
       Toast.show(`Proyecto "${newProject.name}" importado.`, 'success');
     }
     Storage.save(State.projects);
+    updateStorageUsed();
 
     // Opcional: importar las tareas asociadas
     if (json.tasks && json.tasks.length > 0 && confirm('¿Deseas importar también las tareas de este proyecto?')) {
@@ -298,6 +299,7 @@ const DataManager = {
       TaskStorage.save(KanbanState.tasks);
       TaskManager._syncProject(projectId);
       Toast.show(`${imported} tarea(s) importadas.`, 'success');
+      updateStorageUsed();
     }
   }
 };

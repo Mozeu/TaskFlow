@@ -473,6 +473,7 @@ const Renderer = {
     this.renderQuickList();
     this.updateBadge();
     this.updateDashboardStats();
+    updateStorageUsed();
   },
 
   /* ── 9a. Grid / Lista (RF4) ── */
@@ -816,6 +817,29 @@ function injectStyles() {
   document.head.appendChild(s);
 }
 
+function updateStorageUsed() {
+  let totalBytes = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    const value = localStorage.getItem(key);
+    if (key && value) {
+      // Cada carácter en UTF-16 ocupa 2 bytes (aproximación)
+      totalBytes += (key.length + value.length) * 2;
+    }
+  }
+  // Formatear el resultado
+  let formatted;
+  if (totalBytes < 1024) {
+    formatted = `${totalBytes} B`;
+  } else if (totalBytes < 1024 * 1024) {
+    formatted = `${(totalBytes / 1024).toFixed(1)} KB`;
+  } else {
+    formatted = `${(totalBytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+  const el = document.getElementById('val-storage-used');
+  if (el) el.textContent = `${formatted} / 5 MB`;
+}
+window.updateStorageUsed = updateStorageUsed;
 /* ─────────────────────────────────────────────
    17. INICIALIZACIÓN PRINCIPAL
 ───────────────────────────────────────────── */
@@ -838,6 +862,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* RF22 — Carga automática de datos y render inicial */
   Renderer.renderAll();
   Activity.render();
+  updateStorageUsed();
 
   /* Tab inicial */
   TabManager.switchTo('dashboard');
